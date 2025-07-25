@@ -1,0 +1,721 @@
+<?php
+error_reporting(0);
+include('includes/config.php');
+if(strlen($_SESSION['alogin'])==0)
+	{	
+		
+header('location:index.php');
+}
+else{
+        
+        if(isset($_GET['id'])) {
+            $pigletsId = intval($_GET['id']);
+        } else {
+            // Handle error or redirect to another page
+            die('ID not provided.');
+        }
+
+
+    $queryDates = "SELECT weaneddate, piggybloom, prestarter, starter, grower, finisher FROM tblgrowingphase  WHERE id = :pigId";
+$stmtDates = $dbh->prepare($queryDates);
+$stmtDates->bindParam(':pigId', $pigletsId, PDO::PARAM_INT);
+$stmtDates->execute();
+$pigDates = $stmtDates->fetch(PDO::FETCH_ASSOC);
+
+$currentDate = new DateTime();
+// Format both dates for comparison
+$formattedCurrentDates = $currentDate->format('Y-m-d');
+$formattedthirtyoneDay = (new DateTime($pigDates['piggybloom']))->format('Y-m-d');
+$formattedfiftyoneDay = (new DateTime($pigDates['prestarter']))->format('Y-m-d');
+$formattedeightyoneDay = (new DateTime($pigDates['starter']))->format('Y-m-d');
+$formattedgrowerDay = (new DateTime($pigDates['grower']))->format('Y-m-d');
+$formattedfinisherDay = (new DateTime($pigDates['finisher']))->format('Y-m-d');
+
+if ($formattedCurrentDates >= $formattedfinisherDay) {
+    $stat = "Finisher";
+} elseif ($formattedCurrentDates >= $formattedgrowerDay) {
+    $stat = "Finisher";
+} elseif ($formattedCurrentDates >= $formattedeightyoneDay) {
+    $stat = "Grower";
+} elseif ($formattedCurrentDates >= $formattedfiftyoneDay) {
+    $stat = "Starter";
+} elseif ($formattedCurrentDates >= $formattedthirtyoneDay) {
+    $stat = "Pre-Starter";
+} else {
+    // If none of the above conditions are met, set a default status or don't update
+    $stat = "PiggyBloom"; // replace 'DefaultStatus' with whatever default status you want or simply don't set the $stats variable
+}
+if (isset($stat)) {
+    $updateQuery = "UPDATE tblgrowingphase SET status = :status WHERE id = :pigId";
+    $stmt = $dbh->prepare($updateQuery);
+    $stmt->bindParam(':status', $stat);
+    $stmt->bindParam(':pigId', $pigletsId, PDO::PARAM_INT);
+    
+    try {
+        $stmt->execute();
+    } catch (PDOException $e) {
+        echo "Error updating status: " . $e->getMessage();
+    }
+}
+
+// Retrieve the pig details from the database using the $pigId
+$query = "SELECT tg.*,(tg.pigs - (SELECT COUNT(*) FROM piglets p2 WHERE p2.growinphase_id =  tg.id AND p2.status != 'Sold')) AS addedpig 
+FROM tblgrowingphase tg LEFT JOIN 
+piglets p ON tg.id = p.growinphase_id  WHERE tg.id = :pigId  GROUP BY tg.id";
+$stmt = $dbh->prepare($query);
+$stmt->bindParam(':pigId', $pigletsId, PDO::PARAM_INT);
+$stmt->execute();
+$pig = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+$totaladdedpiglets = empty($pig['addedpig']) ? 'disabled' : '';
+
+$date = !empty($pig['weaneddate']) ? new DateTime($pig['weaneddate']) : null;
+$weaneddate = $date ? $date->format('F j, Y') : null;
+$piggybloom = !empty($pig['piggybloom']) ? new DateTime($pig['piggybloom']) : null;
+$piggybloomdate = $piggybloom ? $piggybloom->format('F j, Y') : null;
+$prestarter = !empty($pig['prestarter']) ? new DateTime($pig['prestarter']) : null;
+$prestarterdate = $prestarter ? $prestarter->format('F j, Y') : null;
+$grower = !empty($pig['grower']) ? new DateTime($pig['grower']) : null;
+$growerdate = $grower ? $grower->format('F j, Y') : null;
+$starter = !empty($pig['starter']) ? new DateTime($pig['starter']) : null;
+$starterdate = $starter ? $starter->format('F j, Y') : null;
+$finisher = !empty($pig['finisher']) ? new DateTime($pig['finisher']) : null;
+$finisherdate = $finisher ? $finisher->format('F j, Y') : null;
+
+$formattedCurrentDate = $currentDate->format('Y-m-d');
+$formattedthirtyoneDayAfter = $piggybloom->format('Y-m-d');
+$formattedfiftyoneDayAfter = $prestarter->format('Y-m-d');
+$formattedeightyoneDayAfter = $starter->format('Y-m-d');
+$formattedgrowerDayAfter = $grower->format('Y-m-d');
+$formattedfinisherDayAfter = $finisher->format('Y-m-d');
+
+
+
+if ($formattedCurrentDate >= $formattedfinisherDayAfter) {
+    $stats = "Finisher";
+    $feedConsumptionRate = $pig['pigs'] * 2.2; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  2.5; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 15;
+    $totalFeeds = $feedsConsumptionRate * 15;
+} elseif ($formattedCurrentDate >= $formattedgrowerDayAfter) {
+    $stats = "Finisher";
+    $feedConsumptionRate = $pig['pigs'] * 2.2; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  2.5; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 15;
+    $totalFeeds = $feedsConsumptionRate * 15;
+
+} elseif ($formattedCurrentDate >= $formattedeightyoneDayAfter) {
+    $stats = "Grower";
+    $feedConsumptionRate = $pig['pigs'] * 1.5; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  2.2; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 50;
+$totalFeeds = $feedsConsumptionRate * 50;
+} elseif ($formattedCurrentDate >= $formattedfiftyoneDayAfter) {
+    $stats = "Starter";
+    $feedConsumptionRate = $pig['pigs'] * 0.8; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  1.5; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 30;
+$totalFeeds = $feedsConsumptionRate * 30;
+} elseif ($formattedCurrentDate >= $formattedthirtyoneDayAfter) {
+    $stats = "Pre-Starter";
+    $feedConsumptionRate = $pig['pigs'] * 0.4; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  0.8; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 20;
+$totalFeeds = $feedsConsumptionRate * 20;
+} else {
+    // If none of the above conditions are met, set a default status or don't update
+    $stats = "PiggyBloom"; // replace 'DefaultStatus' with whatever default status you want or simply don't set the $stats variable
+    $feedConsumptionRate = $pig['pigs'] * 0.02; // average of 2.2kg/day and 2.5kg/day
+    $feedsConsumptionRate = $pig['pigs'] *  0.025; // average of 2.2kg/day and 2.5kg/day
+    $totalFeed = $feedConsumptionRate * 31;
+$totalFeeds = $feedsConsumptionRate * 31;
+}
+
+
+// Determine the total sacks needed
+
+// status dates interval
+// status dates interval
+
+// age
+$weaningDate = new DateTime($pig['weaneddate']);
+$currentDate = new DateTime();  
+$weaningDate->setTime(0, 0, 0);
+$currentDate->setTime(0, 0, 0);
+$interval = $currentDate->diff($weaningDate);
+
+$daysDifference = $interval->days;
+$age = $daysDifference;
+// age
+
+
+
+
+if(isset($_POST['update'])){
+    $Id = intval($_POST['id']);  // Convert ID to integer
+    $pigname = $_POST['name'];
+    $sow_id = $_POST['sow_id'];
+    $pigs = $_POST['pigs'];
+    $mortality = $_POST['mortality'];
+    $stat = $_POST['stats'];
+    $filename = null;
+    $total_pigs=$pigs-$mortality;
+    // Fetch current data from database
+    $fetchQuery = $dbh->prepare("SELECT * FROM tblgrowingphase WHERE id = :id");
+    $fetchQuery->bindParam(':id', $Id, PDO::PARAM_STR);
+    $fetchQuery->execute();
+    $currentData = $fetchQuery->fetch(PDO::FETCH_OBJ);
+    $currentstatus = $currentData->status;
+    
+    if ($currentstatus != $stat) {  // If the weaned date has changed
+        if ($stat == 'PiggyBloom') {
+    $currentDate->add(new DateInterval('P31D')); // Add 32 day
+    $thirtyoneDayAfter = $currentDate->format('Y-m-d');
+    $currentDate->add(new DateInterval('P20D')); // Add 20 day
+    $fiftyoneDayAfter = $currentDate->format('Y-m-d');
+    $currentDate->add(new DateInterval('P30D')); // Add 30 day
+    $eightyoneDayAfter = $currentDate->format('Y-m-d');
+    $currentDate->add(new DateInterval('P50D')); // Add 50 day
+    $growerDayAfter = $currentDate->format('Y-m-d');
+    $currentDate->add(new DateInterval('P15D')); // Add 15 day
+    $finisherDayAfter = $currentDate->format('Y-m-d');
+    $status='PiggyBloom';
+
+        } elseif ($stat == 'Pre-Starter') {
+            $currentDate->add(new DateInterval('P20D')); // Add 20 day
+            $fiftyoneDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P30D')); // Add 30 day
+            $eightyoneDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P50D')); // Add 50 day
+            $growerDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P15D')); // Add 15 day
+            $finisherDayAfter = $currentDate->format('Y-m-d');
+            $status='Pre-Starter';
+        } elseif ($stat == 'Starter') {
+            $currentDate->add(new DateInterval('P30D')); // Add 30 day
+            $eightyoneDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P50D')); // Add 50 day
+            $growerDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P15D')); // Add 15 day
+            $finisherDayAfter = $currentDate->format('Y-m-d');
+            $status='Starter';
+        } elseif ($stat == 'Grower') {
+            $currentDate->add(new DateInterval('P50D')); // Add 50 day
+            $growerDayAfter = $currentDate->format('Y-m-d');
+            $currentDate->add(new DateInterval('P15D')); // Add 15 day
+            $finisherDayAfter = $currentDate->format('Y-m-d');
+            $status='Grower';
+        } elseif ($stat == 'Finisher') {
+            $currentDate->add(new DateInterval('P15D')); // Add 15 day
+            $finisherDayAfter = $currentDate->format('Y-m-d');
+            $status='Finisher';
+        } else {
+            $status = $stat;
+        }
+    } else {
+    $thirtyoneDayAfter = $piggybloom->format('Y-m-d');
+    $fiftyoneDayAfter = $prestarter->format('Y-m-d');
+    $eightyoneDayAfter = $starter->format('Y-m-d');
+    $growerDayAfter = $grower->format('Y-m-d');
+    $finisherDayAfter = $finisher->format('Y-m-d');
+        $status = $stat;
+    }
+
+    // If an image was uploaded, update the filename
+    if ($_FILES['pict']['error'] == UPLOAD_ERR_OK) { 
+        $filename = basename($_FILES['pict']['name']);
+        $uploadPath = 'img/' . $filename;
+        
+        // Move the uploaded file to the desired directory
+        if (!move_uploaded_file($_FILES['pict']['tmp_name'], $uploadPath)) {
+            $filename = null;
+        }
+    }
+
+    // If no new image was uploaded, keep the existing image
+    if (!$filename) {
+        $filename = $currentData->img;
+    }
+    $query1 = $dbh->prepare("UPDATE breeder_records SET survived=:survived WHERE breeder_id=:sow_id");
+    $query1->bindParam(':sow_id', $sow_id, PDO::PARAM_STR);
+    $query1->bindParam(':survived', $total_pigs, PDO::PARAM_STR);
+    $query1->execute();
+
+
+        $query = $dbh->prepare("UPDATE tblgrowingphase SET sowname=:name, status=:status, img=:pict, pigs=:pigs,mortality=:mortality,piggybloom=:piggybloom_date,prestarter=:prestarter_date,starter=:starter_date,grower=:grower_date,finisher=:finisher_date WHERE id=:id");
+        $query->bindParam(':name', $pigname, PDO::PARAM_STR);
+        $query->bindParam(':pigs', $total_pigs, PDO::PARAM_STR);
+        $query->bindParam(':mortality', $mortality, PDO::PARAM_STR);
+        $query->bindParam(':status', $status, PDO::PARAM_STR);
+        $query->bindParam(':pict', $filename, PDO::PARAM_STR);
+        $query->bindParam(':id', $Id, PDO::PARAM_INT);
+        $query->bindParam(':piggybloom_date', $thirtyoneDayAfter, PDO::PARAM_STR);
+        $query->bindParam(':prestarter_date', $fiftyoneDayAfter, PDO::PARAM_STR);
+        $query->bindParam(':starter_date', $eightyoneDayAfter, PDO::PARAM_STR);
+        $query->bindParam(':grower_date', $growerDayAfter, PDO::PARAM_STR);
+        $query->bindParam(':finisher_date', $finisherDayAfter, PDO::PARAM_STR);
+
+       
+
+
+    // Execute the query
+    try {
+        $query->execute();
+        echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'growingphasedetails.php?id=" . $Id . "';</script>";
+
+    } catch (PDOException $ex) {
+        echo $ex->getMessage();
+        exit;
+    } 
+
+}
+
+
+
+
+	
+	?>
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Pig</title>
+        <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/x-icon" href="img/logos.jpeg">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <!-- SCRIPTS -->
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Then load Bootstrap and its dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables JS should be loaded after jQuery -->
+
+
+    </head>
+    <body class="<?= $_SESSION['dark_mode'] ? 'dark' : '' ?>">
+
+
+        <!-- SIDEBAR -->
+        <?php include('includes/sidebar.php');?>
+        <!-- SIDEBAR -->
+
+
+
+        <!-- CONTENT -->
+        <section id="content">
+            <!-- NAVBAR -->
+            <?php include('includes/header.php');?>
+            <!-- NAVBAR -->
+
+            <!-- MAIN -->
+            <main>
+
+            <div class="head-title">
+                    <div class="left">
+                        <h1>Feeding Guide</h1>
+                    
+                    </div>
+                </div>
+
+                
+                <div class="feedingguide">
+                
+            <figure>
+            <img src="img/<?php echo $stats?>.png" class="img-fluid rounded-start" alt="starter">
+    </figure>
+    </div>
+
+
+
+
+    <div class="table-data bred">
+                <div class="card mb-3">
+    <div class="row g-0">
+        <div class="col-md-4" >
+        <div class="image-container">
+        <img src="img/<?php echo $pig['img']; ?>" class="img-fluid rounded-start" alt="pig">
+                <div class="image-overlay"></div> 
+            </div>
+        </div>
+        <div class="col-md-8">
+        <div class="card-body">
+        <div class="pigsts">
+        <div class="left-section"> <!-- A container to group the title and the status text -->
+            <h2 class="card-title"><?php echo $pig['sowname']; ?></h2>
+        </div>
+        <div class="right-section"> <!-- A container for the trash icon -->
+        <p class="card-text <?php echo $stats?>"> <?php echo $stats ?></p>
+        <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" ><i class='bx bx-trash'></i></button><span></span>
+        </div>
+    </div>
+                <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
+                <p class="card-text"><span>Total Pigs:</span> <?php echo $pig['pigs']; ?></p>
+                <p class="card-text"><span>Mortality:</span> <?php echo $pig['mortality']; ?></p>
+                
+                <p class="card-text"><span>Weaned Date:</span> <?php echo $weaneddate ?></p>
+            
+                <p class="card-text"><span>Proceed to <?php 
+        if ($pig['status'] == "PiggyBloom") {
+            echo "Pre-Starter:</span> $piggybloomdate ";
+        } elseif ($pig['status'] == "Pre-Starter") {
+            echo "Starter:</span> $prestarterdate";
+        }
+        elseif ($pig['status'] == "Starter") {
+            echo "Grower:</span> $starterdate";
+        }
+        elseif ($pig['status'] == "Grower") {
+            echo "Finisher:</span> $growerdate";
+        }
+        elseif ($pig['status'] == "Finisher") {
+            echo "Completed:</span> $finisherdate";
+        }
+        else{
+            echo 'end';
+        }
+        
+    ?></p>
+    <p class="card-text"><span>Total Feeds Consumption:</span> <?php echo $totalFeed ?> - <?php echo $totalFeeds ?> Kilograms</p>
+
+                
+    <button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+
+
+    <!-- deletepig  Modal -->
+    <div class="modal fade" id="deleteModal-<?php echo $pig['id']; ?>" tabindex="-1"  aria-labelledby="cancelModalLabel-<?php echo $pig['id']; ?>" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    <div class="text-center">
+                        <img src="img/deletepig.svg" alt="Profile Picture" width="150px" height="150px">
+                        <h3 class="confirm">Are you sure you want to delete this pig?</h3>
+                    </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" onclick="deletepig('<?php echo $pig['id']; ?>')">Confirm</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- delete pig Modal -->
+    </div>
+
+
+        </div>
+        <!-- update pig Modal -->
+
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header custom-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Update Pigs</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+        <form id="myForm" action="<?=$_SERVER['REQUEST_URI']?>" method="POST" enctype="multipart/form-data">
+        <div class="row">
+        <input type="hidden" name="id" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['id']; ?>">
+        <input type="hidden" name="sow_id" class="form-control"  value="<?php echo $pig['sow_id']; ?>">
+        <div class="col">
+    <label for="fsowname">Name</label>
+        <input type="text" id="fsowname" name="name" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['sowname']; ?>" autocomplete="given name">
+    </div>
+    <div class="col">
+    <label for="pig">Number of Pigs</label>
+        <input type="number" name="pigs" id="pig" class="form-control" placeholder="Pigs" aria-label="pigs" value="<?php echo $pig['pigs']; ?>">
+    </div>
+
+    </div>
+
+    <br>
+    <div class="row">
+            <div class="col">
+            <label for="win">Weaning Date</label>
+        <input type="date" name="weaned" id="win" class="form-control" placeholder="weaned date" aria-label="weaned date" value="<?php echo $pig['weaneddate']; ?>" readonly>
+            </div>
+            <div class="col">
+            <label for="sts">Status</label>
+    <select name="stats"  id="sts" class="form-select form-select-sm"  value="<?php echo $stats?>" aria-label="status">
+    <option selected><?php echo $stats ?></option>
+    <option value="PiggyBloom">PiggyBloom</option>
+    <option value="Pre-Starter">Pre-Starter</option>
+    <option value="Starter">Starter</option>
+    <option value="Grower">Grower</option>
+    <option value="Finisher">Finisher</option>
+    </select>
+            </div>
+    </div>
+    <div class="row">
+    <div class="col">
+    <label for="pig">Mortality</label>
+        <input type="number" name="mortality" id="mortality" class="form-control" placeholder="Mortality" aria-label="mortality" value="<?php echo $pig['mortality']; ?>">
+    </div>
+    </div>
+    <br>
+        
+        <div class="row">
+        <div class="col">
+                                    <label for="map">Picture</label></label>
+                                        <input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0">
+                                    </div>
+    </div>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="update" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+        </div>
+    </div>
+                    </div>
+
+                    </div>    
+    <!-- update pig Modal -->
+    </div>
+    </div>
+    </div>
+
+
+    <div class="table-data" >
+                <div class="order">
+                        <div class="heads">
+                            <h3>Piglets List</h3>
+                            <div class="search-container">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search..." id="searchInput" aria-label="Search">
+            <div class="input-group-append">
+                <span class="input-group-text"><i class='bx bx-search-alt-2'></i></span>
+        </div>
+    </div>
+    </div>
+                            <button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#addModal"
+        class="openModalBtn" <?php echo $totaladdedpiglets ?>><i class='bx bx-plus-circle' ></i> Add New </button>
+                        </div>
+
+                        <ul class="breeders" id="carList">
+                        <?php 
+                            
+                            $sql ="SELECT * FROM piglets WHERE growinphase_id = :pigid AND status != 'UnHealthy'  ORDER BY id DESC";
+                            $query3 = $dbh->prepare($sql);
+                            $query3->bindparam(':pigid',$pigletsId ,PDO::PARAM_INT);
+                            $query3->execute();
+                            $results=$query3->fetchAll(PDO::FETCH_OBJ);
+                            
+                            foreach($results as $result){
+                            ?>
+                                
+                        <li data-make="<?php echo htmlentities($result->name); ?>" data-model="<?php echo htmlentities($result->status); ?>" data-year="<?php echo htmlentities($result->age); ?>">
+        <div class="card">
+            <div class="image-container">
+                <img src="img/<?php echo htmlentities($result->img); ?>" class="card-img-top" alt="...">
+                
+                <div class="image-overlay"></div> 
+            </div>
+            <div class="card-body">
+                <h5 class="card-title"><?php echo htmlentities($result->name); ?></h5>
+                <div class="flex">
+                <p class="card-text <?php echo htmlentities($result->status); ?>"><?php echo htmlentities($result->status); ?></p>
+                <p class="card-text"><span>Gender: &nbsp;</span><?php echo htmlentities($result->gender);?></p>
+    <p class="card-text"><span>Feed Intake:</span><br> <?php echo $totalFeeds ?> kg</p>
+    </div>
+    <a href="pigletdetails.php?id=<?php echo htmlentities($result->id); ?>&group_id=<?php echo htmlentities($pigletsId); ?>" class="view-btn">View</a>
+            </div>
+        </div>
+    </li>
+    <?php }?>
+    </ul>
+     <!-- add pig modal -->
+
+     <div class="modal fade" id="addModal"  aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+        <div class="modal-header custom-header">
+            <h1 class="modal-title fs-5" id="addModalLabel">Add Piglets</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+        <form action="addpiglets.php" method="POST" enctype="multipart/form-data">
+        <div class="row">
+    <div class="col">
+    <label for="pigname">Piglets Name</label>
+        <input type="text" id="pigname" name="name" class="form-control" placeholder="Pig name" aria-label="name" autocomplete="off" required>
+        <input type="text" id="id" name="id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo $pigletsId; ?>" autocomplete="off"  hidden>
+    </div>
+    </div>
+    <br>
+    <div class="row">
+            
+            <div class="col">
+            <label for="weandate">Gender: &nbsp;</label>
+            <input class="form-check-input" type="radio" name="gender" id="Male" value="Male">
+  <label class="form-check-label" for="Male">
+   Male
+  </label>
+
+  <input class="form-check-input" type="radio" name="gender" id="Female" value="Female">
+  <label class="form-check-label" for="Female">
+    Female
+  </label>
+
+            </div>
+            
+    </div>
+    <br>
+    <div class="row">
+            
+            <div class="col">
+            <label for="weandate">Status: &nbsp;</label>
+            <input class="form-check-input" type="radio" name="status" id="Healthy" value="Healthy">
+  <label class="form-check-label" for="Healthy">
+  Healthy
+  </label>
+
+  <input class="form-check-input" type="radio" name="status" id="UnHealthy" value="UnHealthy" >
+  <label class="form-check-label" for="UnHealthy">
+  UnHealthy
+  </label>
+
+            </div>
+            
+    </div>
+
+
+
+<div class="row" id="unhealthyFields" >
+    <div class="col">
+        <label for="details">Details</label>
+        <input type="text" id="details" name="details" class="form-control" placeholder="Enter details">
+    </div>
+    <div class="col">
+        <label for="date_started">Date Started</label>
+        <input type="date" id="date_started" name="date_started" class="form-control">
+    </div>
+</div>
+
+
+
+    <br>
+        <div class="row">
+        <div class="col">
+                                    <label for="map">Picture</label>
+                                        <input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0"required>
+                                    </div>
+    </div>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="add" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+        </div>
+    </div>
+                    </div>
+
+                    </div>    
+    <!-- add pig modal -->
+        
+    </div>
+    </div>	
+
+            </main>
+            <!-- MAIN -->
+                <!-- FOOTER -->
+            <?php include('includes/footer.php');?>
+            <!-- FOOTER -->
+        </section>
+        <!-- CONTENT -->
+        
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const unhealthyRadio = document.getElementById("UnHealthy");
+        const healthyRadio = document.getElementById("Healthy");
+        const extraFields = document.getElementById("unhealthyFields");
+
+        function toggleUnhealthyFields() {
+            if (unhealthyRadio.checked) {
+                extraFields.style.display = "block";
+            } else {
+                extraFields.style.display = "none";
+            }
+        }
+
+        unhealthyRadio.addEventListener("change", toggleUnhealthyFields);
+        healthyRadio.addEventListener("change", toggleUnhealthyFields);
+    });
+        $(document).ready(function() {
+
+        $("#searchInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+
+            $("#carList li").filter(function() {
+                // Combining all the data attributes into one string for comparison
+                var combinedData = $(this).data('make') + " " + $(this).data('model') + " " + $(this).data('year');
+
+                // Toggle the visibility based on whether the combined data string contains the search term
+                $(this).toggle(combinedData.toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+
+    $(document).on('click', '.delete-btn', function() {
+            // Save the pig ID to deletePigId
+            deletePigId = $(this).data('id');
+            // Show the modal
+            $('#deleteModal-' + deletePigId).modal('show');
+        });
+
+        // Handle the "Confirm" button click
+        $(document).on('click', '#confirmDelete', function() {
+            // Call deletepig
+            deletepig(deletePigId);
+        });
+
+    function deletepig(id) {
+        // Send a POST request to delete.php
+        $.ajax({
+            url: 'delete.php',  // This sends the request to delete.php
+            type: 'POST',
+            data: { pigsid: id },
+            success: function(response) {
+            // Show the success message
+            // Close the modal
+            $('#deleteModal-' + id).modal('hide');
+            
+            // Redirect to the desired page
+            window.location.replace('piggrowingphase.php');
+
+    },
+            error: function() {
+                alert('An error occurred while trying to delete the sow.');
+            }
+        });
+    }
+
+
+    </script>
+        <script src="script.js"></script>
+    </body>
+    </html>
+    <?php } ?>

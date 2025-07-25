@@ -1,0 +1,1840 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+a {
+	text-decoration: none;
+}
+
+li {
+	list-style: none;
+}
+
+:root {
+	--poppins: 'Poppins', sans-serif;
+	--lato: 'Lato', sans-serif;
+	--less: #eff3f0;
+	--light: #ffffff;
+	--blue: rgb(65, 131, 244);
+	--light-blue: #CFE8FF;
+	--grey: #eee;
+	--pink: #fa048b;
+	--dark-grey: #AAAAAA;
+	--dark: #342E37;
+	--white: #ffffff;
+	--darker: #000000;
+	--red: #eb1710;
+	--yellow: #fac208;
+	--light-yellow: #FFF2C6;
+	--orange: #ff4d00;
+	--light-orange: #FFE0D3;
+	--green: #14960F;
+	--darkgreen: #055003;
+	--lesspink: #ec76de;
+	--lightgreen: #dcfadb;
+	--lessgreen: #24911d;
+	--gray:rgba(0, 0, 0, 0.1);
+}
+
+html {
+	overflow-x: hidden;
+}
+
+body.dark {
+	--lightgreen: #dcfadb;
+	--gray:rgba(255, 255, 255, 0.1);
+	--light: #0C0C1E;
+	--less: #0C0C1E;
+	--grey: #060714;
+	--dark: #FBFBFB;
+}
+
+body {
+		
+	overflow-x: hidden;
+}
+
+
+
+
+/* SIDEBAR */
+#sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 280px;
+	height: 100%;
+	background: var(--light);
+	z-index: 2000;
+	font-family: var(--lato);
+	transition: .3s ease;
+	overflow-x: hidden;
+	scrollbar-width: none;
+}
+
+#sidebar::--webkit-scrollbar {
+	display: none;
+}
+#sidebar.hide {
+	width: 70px;
+}
+#sidebar .brand {
+	font-size: 24px;
+	font-weight: 700;
+	height: 56px;
+	display: flex;
+	align-items: center;
+	color: var(--green);
+	position: sticky;
+	text-decoration: none;
+	top: 0;
+	left: 0;
+	background: var(--light);
+	z-index: 500;
+	padding-bottom: 20px;
+	box-sizing: content-box;
+	
+}
+
+#sidebar .brand img{
+	width: 10%;
+	height: 80%;
+	min-width: 40px;
+	display: flex;
+	
+	justify-content: center;
+	margin: 20px 0px 0px 20px;
+}
+#sidebar .brand .text{
+	padding-left: 10px;
+	margin: 20px 0px 0px 0px;
+}
+#sidebar .side-menu {
+	width: 100%;
+	margin-top: 30px;
+}
+#sidebar .side-menu li {
+	height: 48px;
+	background: transparent;
+	margin-left: -15px;
+	
+}
+#sidebar .side-menu li i {
+	color:var(--green);
+}
+#sidebar .side-menu li a {
+	display: flex;
+	text-decoration: none;
+	align-items: center;
+	font-size: 18px;
+	color: var(--dark);
+	white-space: nowrap;
+	overflow-x: hidden;
+}
+#sidebar .side-menu.top li.active a {
+	color: var(--green);
+}
+#sidebar.hide .side-menu li a {
+	width: calc(48px - (4px * 2));
+	transition: width .3s ease;
+}
+#sidebar .side-menu li a.logout {
+	color: var(--red);
+}
+#sidebar .side-menu.top li a:hover {
+	color: var(--green);
+}
+#sidebar .side-menu li a .bx {
+	min-width: calc(60px  - ((4px + 6px) * 2));
+	display: flex;
+	justify-content: center;
+}
+/* SIDEBAR */
+
+
+
+
+
+/* CONTENT */
+#content {
+	position: relative;
+	width: calc(100% - 280px);
+	left: 280px;
+	transition: .3s ease;
+}
+#sidebar.hide ~ #content {
+	width: calc(100% - 60px);
+	left: 60px;
+}
+
+
+
+
+/* NAVBAR */
+#content nav {
+    height: 56px;
+    background: var(--light);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content:space-between;
+    font-family: var(--lato);
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+#content nav .left-side, #content nav .right-side button .notif-Grower{
+	color:var(--blue);
+
+}
+ .notif-starter{
+	color:var(--blue);
+}
+.custom-popover .popover-body {
+	max-height: 300px;
+	overflow-y: auto;
+	width: 300px;
+  }
+#content nav .left-side, #content nav .right-side .notif-Finisher{
+	
+}
+#content nav .left-side, #content nav .right-side .notif-Pre-Starter{
+	
+}
+#content nav .left-side, #content nav .right-side .notif-piggybloom{
+	
+}
+
+#content nav .left-side, #content nav .right-side {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#content nav .left-side, #content nav .right-side .btn .notif-box {
+	color:var(--lessgreen);
+
+	
+}
+  .popover {
+      max-width: 300px;
+    }
+    .notification-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+#content nav a {
+	font-weight: bold;
+    color: var(--dark);
+}
+
+#content nav .bx.bx-menu {
+    cursor: pointer;
+    color: var(--dark);
+}
+
+#content nav .nav-link {
+    font-size: 20px;
+    transition: .3s ease;
+}
+
+#content nav .nav-link:hover {
+    color: var(--green);
+}
+
+#content nav .profile img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+input[type="checkbox"]{
+	display:none;
+  }
+#content nav  .switch-mode {
+    display: block;
+	position:absolute;
+   top:16px;
+   right:70px;
+   cursor:pointer;
+   border: transparent;
+}
+
+.bxs-sun{
+	color:var(--yellow);
+	font-size:25px;
+	text-shadow:0px 0px 20px var(--yellow);
+	transform:translateX(15px);
+	transition:.3s;
+  }
+  .bxs-moon{
+	color:white;
+	font-size:25px;
+	text-shadow:0px 0px 20px var(--white);
+	transform:translateX(15px);
+	opacity:0;
+	transition:.3s;
+  }
+  #content nav #switch-mode:checked ~ label > .bxs-sun{
+	opacity:0;
+	transform:translateX(-25px);
+  }
+  #content nav #switch-mode:checked ~ label > .bxs-moon{
+	opacity:1;
+	transform:translateX(-15px);
+  }
+
+
+/* NAVBAR */
+
+
+
+
+
+/* MAIN */
+#content main {
+	width: 100%;
+	padding: 0px 24px;
+	background-color:var(--less); 
+	font-family: var(--poppins);
+	height: 100vh;
+	overflow-y: auto;
+}
+#content main .head-title {
+	display: flex;
+	margin-top: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	grid-gap: 16px;
+	flex-wrap: wrap;
+}
+#content main .head-title .left{
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+#content main .head-title .left h1 {
+	font-size: 36px;
+	font-weight: 600;
+	margin-top: 10px;
+	color: var(--dark);
+}
+
+#content main .table-data {
+	margin-bottom: 50px;
+}
+#content main .table-data .card{
+margin:0;
+}
+
+#content main .head-title .left button{
+	background-color: var(--light);
+	border:1px solid var(--green);
+	border-radius:15px;
+
+}
+#content main .table-data .order .left{
+width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#content main .table-data .order .left{
+	margin-bottom: 30px;
+}
+
+#content main .table-data .order .left h1 {
+	font-size: 36px;
+	font-weight: 600;
+	margin-bottom: 10px;
+	color: var(--green);
+}
+
+#content main .table-data .order #myTable tbody tr td .openModalBtn,#content main .table-data .order #myTable tbody tr td .delete {
+	border:none;
+	background-color:transparent;
+}
+#content main .table-data .order #myTable tbody tr td .openModalBtn i{
+	color:#14960F;
+	font-size: 25px;
+}
+ .sowModalBtn i{
+	color:#14960F;
+	font-size: 25px;
+}
+.sowModalBtn{
+	background-color: transparent;
+	border: none;
+}
+#content main .table-data .order #myTable tbody tr td .delete i,#content main .table-data .order #myTable tbody tr td .deleterecord i {
+	color: var(--red);
+	font-size:25px;
+
+}
+#content main .table-data .order #myTable tbody tr td .reply i {
+	color: var(--blue);
+	font-size:25px;
+
+}
+#content main .table-data .order #myTable tbody tr td button .bx-check{
+	color: var(--green);
+	font-size:30px;
+
+}
+
+
+#content main .table-data .order #myTable tbody tr .select .pending{
+	width:92px;
+	height:30px;
+	padding-left:10px;
+}
+
+#content main .table-data .order .left .openModalBtn{
+	background-color: var(--green);
+	padding:8px 13px 8px 13px;
+	border:1px solid var(--lessgreen);
+	border-radius:10px;
+	color:white;
+	font-size:15px;
+	
+}
+#content main .table-data .order .left .openModalBtn i{
+color:#ffff;
+font-size:20px;
+}
+ .action .delete i{
+	color:var(--red);
+	font-size:25px;
+
+}
+
+ .action .updateModalBtn i,.action .updatefeed i{
+	color:var(--blue);
+	font-size:25px;
+}
+
+#content main .head-title .left .breadcrumb {
+	display: flex;
+	align-items: center;
+	grid-gap: 16px;
+}
+#content main .head-title .left .breadcrumb li {
+	color: var(--dark);
+}
+#content main .head-title .left .breadcrumb li a {
+	color: var(--dark-grey);
+	pointer-events: none;
+}
+#content main .head-title .left .breadcrumb li a.active {
+	color: var(--blue);
+	pointer-events: unset;
+}
+
+#content main .box-info {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	grid-gap: 24px;
+	margin:  25px 10px 10px -8px;
+}
+#content main .box-info li {
+	padding: 24px;
+	background: var(--light);
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	grid-gap: 24px;
+}
+#content main .table-data .todo .head .modal .modal-body .modal-footer #confirmBtn{
+	background-color: var(--green);
+	color: var(--light);
+	
+}
+#content main .table-data .todo .head .modal .modal-body .modal-footer #closeBtn{
+	background-color: var(--dark-grey);
+	color: var(--light);
+}
+#content main .table-data .order .heads{
+	padding: 0px 30px 0px 30px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+#content main .table-data .order .heads input{
+	padding: 5px;
+	width: 20%;
+	z-index: 0;
+    background-color: transparent;
+	color: var(--dark);
+	border-radius: 5px;
+   
+}
+#content main .table-data .order .heads input::placeholder {
+    color: var(--dark-grey); /* Change to your preferred color */
+    opacity: 1; /* Override the browser's default opacity */
+}
+::-webkit-input-placeholder {
+    color:var(--dark-grey);
+    opacity: 1;
+}
+#content main .table-data .order .breeders {
+	padding:0px 50px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	grid-gap: 24px;
+	margin-top: 36px;
+}
+#content main .table-data .order .breeders li {
+	position: relative;
+	background: var(--light);
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	grid-gap: 24px;
+}
+#content main .table-data .order .heads .search-container {
+	max-width: 300px;
+}
+/* Growing Phase */
+#content main .table-data .order .breeders li .card .card-body .card-texts {
+	text-align: center;
+	width: 100%;
+	padding: 5px 10px 5px 5px;
+	border-radius: 10px;
+    z-index: 1;  /* This ensures it's above the image */
+    background-color:transparent;  /* Optional: Just to ensure text visibility on different image backgrounds */
+     
+}
+
+#content main .table-data .order .breeders li .card .card-body .PiggyBloom {
+    color: var(--pink);
+	border: 1px solid var(--pink);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Healthy {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+
+
+#content main .table-data .order .breeders li .card .card-body .Diagnosed {
+    color: var(--blue);
+	border: 1px solid var(--light-blue);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Treatment {
+    color: var(--orange);
+	border: 1px solid var(--light-orange);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Recovered {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Deceased {
+    color: var(--dark);
+	border: 1px solid var(--dark-grey);
+	
+}
+
+#content main .table-data .order .breeders li .card .card-body .Sold {
+    color: var(--pink);
+	border: 1px solid var(--lesspink);
+	
+}
+
+#content main .table-data .order .breeders li .card .card-body .Cull {
+    color: var(--red);
+	border: 1px solid var(--orange);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Posted {
+    color: var(--blue);
+	border: 1px solid var(--light-blue);
+	
+}
+
+#content main .table-data .order .breeders li .card .card-body .Breeder {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .UnHealthy {
+    color: var(--red);
+	border: 1px solid var(--light-orange);
+	
+}
+
+#content main .table-data .order .breeders li .card .card-body .Pre-Starter {
+    color: var(--green);
+	border: 1px solid var(--green);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Starter {
+    color: var(--orange);
+	border: 1px solid var(--orange);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Grower {
+    color: var(--red);
+	border: 1px solid var(--red);
+	
+}
+#content main .table-data .order .breeders li .card .card-body .Finisher {
+    color: var(--blue);
+	border: 1px solid var(--blue);
+	
+}
+
+/* Growing Phase */
+
+/* Style to make the icon appear inside the search box */
+#content main .table-data .order .heads .search-container .input-group-text {
+	background: transparent;
+	border: none;    
+    right: -4px; /* Adjust this value as needed */
+    position: absolute;
+    top: 50%;
+	color: var(--dark);
+    transform: translateY(-50%);
+}
+#content main .table-data .order .heads .openModalBtn{
+	background-color: var(--green);
+	padding:10px 15px 10px 15px;
+	border:1px solid var(--green);
+	border-radius:10px;
+	color:white;
+}
+#content main .table-data .order .breeders li .card .card-body .view-btn {
+	text-decoration: none;
+	opacity: 0;
+	position: absolute;
+	bottom: 35%;
+	left: 50%;
+	transform: translate(-50%, 50%);
+	padding: 10px 20px;
+	border: none;
+	color: var(--darker);
+	background-color: var(--dark);
+	visibility: hidden;
+	text-align: center;
+	cursor: pointer;
+	font-weight: bold;
+	transition: opacity 0.3s, transform 0.3s;
+  } 
+  #content main .table-data .order .breeders li .card .card-body{
+	min-height: 205px;
+  }
+  #content main  .table-data .order .breeders li .card .card-body .flex {
+	display: flex;
+    flex-direction: column; /* Makes the child elements stack vertically */
+    align-items: center; /* Centers children horizontally */
+    justify-content: center; 
+  }
+  #content main  .table-data .order .breeders li .card .card-body .flex p:first-child, #content main .table-data .order .breeders li .card .card-body .card-texts {
+	padding: 3px;
+	border-radius:5px;
+	display: flex;
+	font-size: 11px;
+	background-color: var(--light);
+	}
+
+	/* breeders*/
+	#content main  .table-data .order .breeders li .card .card-body .flex .Lactating{
+		border: 1px solid var(--green);
+		color: var(--green);
+	}
+	#content main  .table-data .order .breeders li .card .card-body .flex .Breeding{
+		border: 1px solid var(--blue);
+		color: var(--blue);
+
+	}
+	#content main  .table-data .order .breeders li .card .card-body .flex .Farrowing{
+		border: 1px solid var(--yellow);
+		color: var(--yellow);
+	}
+	#content main  .table-data .order .breeders li .card .card-body .flex .Culling{
+		border: 1px solid var(--red);
+		color: var(--red);
+	}
+
+/* breeders */
+/* pigs */
+#content main  .bred .card .card-body .pigsts .PiggyBloom{
+	border: 1px solid var(--pink);
+	color: var(--pink);
+}
+#content main  .bred .card .card-body .pigsts .Pre-Starter{
+	border: 1px solid var(--green);
+	color: var(--green);
+}
+
+#content main .bred .card .card-body .pigsts  .Healthy {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+
+#content main .bred .card .card-body .pigsts  .Diagnosed {
+    color: var(--blue);
+	border: 1px solid var(--light-blue);
+	
+}
+#content main .bred .card .card-body .pigsts  .Treatment {
+    color: var(--orange);
+	border: 1px solid var(--light-orange);
+	
+}
+#content main .bred .card .card-body .pigsts  .Recovered {
+    color: var(--dark);
+	border: 1px solid var(--dark-grey);
+	
+}
+#content main .bred .card .card-body .pigsts  .Deceased {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+
+
+#content main .bred .card .card-body .pigsts  .Sold {
+    color: var(--pink);
+	border: 1px solid var(--lesspink);
+	
+}
+#content main .bred .card .card-body .pigsts  .Cull {
+    color: var(--red);
+	border: 1px solid var(--orange);
+	
+}
+#content main .bred .card .card-body .pigsts  .Breeder {
+    color: var(--green);
+	border: 1px solid var(--lessgreen);
+	
+}
+
+
+#content main .bred .card .card-body .pigsts  .Posted {
+    color: var(--blue);
+	border: 1px solid var(--light-blue);
+	
+}
+
+#content main .bred .card .card-body .pigsts  .UnHealthy {
+    color: var(--red);
+	border: 1px solid var(--light-orange);
+	
+}
+
+#content main  .bred .card .card-body .pigsts .Starter{
+	border: 1px solid var(--orange);
+	color: var(--orange);
+}
+#content main  .bred .card .card-body .pigsts .Grower{
+	border: 1px solid var(--red);
+	color: var(--red);
+}
+#content main  .bred .card .card-body .pigsts .Finisher{
+	border: 1px solid var(--blue);
+	color: var(--blue);
+}
+/* pigs */	
+
+
+  #content main .table-data .order .breeders li .card .card-body  .card-title{
+	text-align: center;
+  }
+  #content main .table-data .order .breeders li .card .card-body .card-text{
+	margin-bottom: 7px !important;
+	text-align: center;
+	font-size: 15px;
+
+  }
+  #content main .table-data .order .breeders li .card .card-body .card-text span{
+	color:var(--dark);
+	font-size: 16px;
+   font-weight: 500;
+  }
+#content main .table-data .order .breeders li .card:hover .view-btn {
+	width: 50%;
+	border-color: 1px solid var(--dark);
+	background-color: var(--dark);
+	color: var(--light);
+	border-radius: 25px;
+	visibility: visible;
+	opacity: 1;
+	transform: translate(-50%, -50%);
+  }
+#content main .table-data .order .breeders li .card {
+color: var(--dark);
+	width: 100%;
+    margin: 0;  /* Ensuring no external margins */
+    padding: 0; /* Ensuring no internal paddings */
+	box-shadow: 0px 4px 10px var(--gray); 
+}
+#content main .table-data .order .breeders li .card:hover{
+	transform: translateY(-5px); /* Add hover effect */
+filter: brightness(95%);
+box-shadow: inset 10px 0 10px -10px #4e4e4e, /* Left shadow */
+	inset -10px 0 10px -10px #4e4e4e,
+	inset 0 -10px 10px -10px #4e4e4e,   /* Right shadow */
+	inset 0 0px 10px -10px #4e4e4e; 
+	border-radius: 5px 5px 5px 5px;
+}
+#content main .table-data .order .breeders li .cull:hover{
+	transform: translateY(-2px) !important; /* Add hover effect */
+filter: none !important;
+box-shadow: none !important; 
+}
+
+#content main .table-data .order .breeders li .card .card-body{
+	box-shadow: inset 1px 0 1px -1px #4e4e4e, /* Left shadow */
+	inset -1px 0 1px -1px #4e4e4e,
+	inset 0 -1px 1px -1px #4e4e4e,   /* Right shadow */
+	inset 0 0px 1px -1px #4e4e4e; 
+	border-radius: 0px 0px 5px 5px;
+	height: 230px;
+ 
+}
+
+#content main .table-data .order .breeders li .card .card-body{
+	box-shadow: inset 1px 0 1px -1px #4e4e4e, /* Left shadow */
+	inset -1px 0 1px -1px #4e4e4e,
+	inset 0 -1px 1px -1px #4e4e4e,   /* Right shadow */
+	inset 0 0px 1px -1px #4e4e4e; 
+	border-radius: 0px 0px 5px 5px;
+	height: 200px;
+ 
+}
+
+#content main .table-data .order .breeders li .card .cull{
+	box-shadow: inset 1px 0 1px -1px #4e4e4e, /* Left shadow */
+	inset -1px 0 1px -1px #4e4e4e,
+	inset 0 -1px 1px -1px #4e4e4e,   /* Right shadow */
+	inset 0 0px 1px -1px #4e4e4e; 
+	border-radius: 0px 0px 5px 5px;
+	height: 270px;
+ 
+}
+
+
+#content main .table-data .order .breeders li .card .image-container {
+position: relative;
+width: 100%;
+height: 150px;
+
+}
+#content main .bred .card .row .image-container{
+	position: relative;
+width: 100%;
+height: 100%;
+}
+#content main .table-data .order .breeders li .card .image-container img, #content main .bred .card .row .image-container img{
+	display: block;
+    width: 100%;
+	height:100%;
+	}
+
+	#content main .table-data .order .breeders li .card .image-container .image-overlay{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 100%;
+		height: 20%; /* height of the overlay on mobile */
+		background: linear-gradient(to top, var(--light), rgba(255, 255, 255, 0));
+	
+	}
+
+	 #content main .bred .card .row .image-container .image-overlay{
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 20%;
+		height: 100%; /* This will cover the bottom 30% of the image. Adjust as needed. */
+		background: linear-gradient(to left, var(--light),rgba(255, 255, 255, 0)); /* Adjust the 50% value as needed */
+         z-index: 1;
+	 }
+	#content main  .bred{
+		display:flex;
+		align-items:center;
+		justify-content:center;
+	}
+	#content main  .bred .card{
+		padding: 0;
+		width:80%;
+		margin: 0;
+		border-radius: 0px 0px 5px 5px;
+		box-shadow: 0 4px 6px rgba(114, 113, 113, 0.1);
+		overflow: hidden;
+		height: 100%;
+		color: var(--dark);
+	}
+	#content main  .bred .card .card-body{
+		border-radius: 0px 0px 5px 5px;
+		overflow: hidden;  
+		margin-bottom:-1rem;
+		
+	}
+
+	#content main  .bred .card .card-body .card-text{
+		margin: 0;
+		padding: 5px;
+	}
+	#content main  .bred .card .card-body .card-text span{
+		font-weight: 600;
+	}
+	
+	#content main  .bred .card .card-body .pigsts{
+	
+    width: 100%;
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: center;
+    justify-content:space-between;
+
+	}
+	#content main  .bred .card .card-body .pigsts .left-section {
+		display: flex;
+		align-items: center;
+		gap: 10px; /* Adjusts space between the title and the paragraph */
+	}
+	#content main  .bred .card .card-body .pigsts .right-section {
+		display: flex;
+		align-items: center;
+	}
+	#content main  .bred .card .card-body .pigsts .right-section .deleteModalBtn:disabled{
+		border: none;
+		background-color: transparent;
+	}
+	#content main  .bred .card .card-body .pigsts .right-section i {
+		font-size: 30px;
+		color: var(--red);
+		padding: 2px;
+	}
+	
+	#content main  .bred .card .card-body .pigsts .card-text{
+		padding: 5px;
+		border-radius:10px;
+		background-color: var(--light);
+		}
+
+
+		#content main .bred .card .card-body .pigsts .Healthy {
+			color: var(--green);
+			border: 1px solid var(--lessgreen);
+			
+		}
+
+		#content main .bred .card .card-body .pigsts .Diagnosed {
+			color: var(--blue);
+			border: 1px solid var(--light-blue);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Treatment {
+			color: var(--orange);
+			border: 1px solid var(--light-orange);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Recovered {
+			color: var(--green);
+			border: 1px solid var(--lessgreen);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Deceased {
+			color: var(--dark);
+			border: 1px solid var(--dark-grey);
+			
+		}
+
+		#content main .bred .card .card-body .pigsts .Sold {
+			color: var(--pink);
+			border: 1px solid var(--lesspink);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Cull {
+			color: var(--red);
+			border: 1px solid var(--orange);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Breeder {
+			color: var(--green);
+			border: 1px solid var(--lessgreen);
+			
+		}
+
+		#content main .bred .card .card-body .pigsts .Posted {
+			color: var(--blue);
+			border: 1px solid var(--light-blue);
+			
+		}
+
+		#content main .bred .card .card-body .pigsts .UnHealthy {
+			color: var(--red);
+			border: 1px solid var(--light-orange);
+			
+		}
+
+
+		#content main  .bred .card .card-body .pigsts .Lactating{
+			border: 1px solid var(--green);
+			color: var(--green);
+		}
+		#content main  .bred .card .card-body .pigsts .Breeding{
+			border: 1px solid var(--blue);
+			color: var(--blue);
+
+		}
+		#content main  .bred .card .card-body .pigsts .Farrowing{
+			border: 1px solid var(--yellow);
+			color: var(--yellow);
+		}
+	#content main  .bred .card .updateModalBtn{
+		background-color: var(--blue);
+		padding:10px 20px 10px 20px;
+		display: inline-block;
+		border:none;
+		margin-top: 5px;
+		width: 100%;
+		border-radius:8px;
+		color:#fff;
+	}
+	#content main  .bred .card .cullingModalBtn{
+		background-color: var(--red);
+		padding:10px 20px 10px 20px;
+		display: inline-block;
+		border:none;
+		margin-top: 5px;
+		width: 100%;
+		border-radius:8px;
+		color:#fff;
+	}
+	#content main  .bred .card .breedingModalBtn{
+		background-color: var(--green);
+		padding:10px 20px 10px 20px;
+		display: inline-block;
+		border:none;
+		margin-top: 5px;
+		width: 100%;
+		border-radius:8px;
+		color:#fff;
+	}
+	
+	#pigCareSlider {
+		width: 100%;
+	}	
+	.care-timeline {
+		border-radius:10px ;
+		background-color: var(--light);
+		position: relative;
+		padding: 30px;
+		width: 100%;  /* adjust based on your design */
+	}
+ 
+	.feedingguide{
+		border-radius:10px ;
+		background-color: var(--less);
+		position: relative;
+		padding: 30px 30px 0px 30px;
+		width: 100%;  
+	}
+	.feedingguide figure .rounded-start{
+		display:block;
+		margin: 0 auto;
+		width:80%;
+	}
+	.care-timeline h5{
+	color: var(--dark);
+	}
+	.care-timeline .guide{
+		display: flex;
+		width: 100%;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.care-timeline .guide .openModalBtn{
+		background-color: var(--green);
+		padding:5px 10px 5px 10px;
+		border:1px solid var(--lessgreen);
+		border-radius:8px;
+		color:#ffff;
+		font-size:15px;
+	}
+	.moveModalBtn{
+		background-color: var(--light);
+		padding:5px 10px 5px 10px;
+		border:1px solid var(--green);
+		border-radius:8px;
+		color:var(--green);
+		font-size:14px;
+	}
+	.moveModalBtn i{
+		font-size:18px;
+	}
+	.care-timeline .guide .openModalBtn i{
+		
+		font-size:20px;
+	}
+	.custom-popover {
+  --bs-popover-max-width: 200px;
+  --bs-popover-border-color:green;
+  --bs-popover-header-bg: green;
+  --bs-popover-header-color: #fff;
+  --bs-popover-body-padding-x: 1rem;
+  --bs-popover-body-padding-y: .5rem;
+}
+
+	.care-tasks {
+		display: flex;
+		justify-content: space-between;
+		position: relative;
+		color:var(--dark);
+		z-index: 1;
+		margin-bottom: 20px;  /* adjust based on your design */
+	}
+	
+	.care-timeline .care-tasks .care-task .plus{
+		
+		border:none;
+		background-color:transparent;
+
+	}
+	.care-timeline .care-tasks .care-task .plus i{
+		color: var(--green);
+		font-size: 20px;
+
+	}
+
+	.care-timeline .care {
+		padding:0px 80px 0px 80px;
+	
+	}
+	
+	.care-task {
+		flex: 1;
+		text-align: center;
+		opacity: 0.5;
+	}
+	
+
+	/* Highlight the active task */
+	.active-task {
+		opacity: 1;
+		font-weight: bold;
+		color: var(--green);
+	}
+
+	
+
+#content main .box-info .pigbreeder {
+	padding: 15px 15px 15px 25px;
+	background: var(--light);
+	border-radius: 20px;
+	display: flex;
+	
+	align-items: center;
+	grid-gap: 24px;
+}
+#content main .box-info .pigbreeder .bx {
+	width: 60px;
+	height: 60px;
+	border-radius: 10px;
+	font-size: 36px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#content main .box-info li .bx {
+	width: 50px;
+	height: 50px;
+	border-radius: 10px;
+	font-size: 36px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#content main .box-info li:nth-child(1) .bx {
+	background: var(--light-blue);
+	color: var(--blue);
+}
+#content main .box-info li:nth-child(2) .bx {
+	background: var(--light-yellow);
+	color: var(--yellow);
+}
+#content main .box-info li:nth-child(3) .bx {
+	background: var(--lightgreen);
+	color: var(--green);
+}
+#content main .box-info li .text h3 {
+	font-size: 24px;
+	font-weight: 600;
+	color: var(--dark);
+}
+#content main .box-info li .text p {
+	color: var(--dark);	
+}
+#content main .box-info li .text{
+	line-height: 5px;
+	}
+#content main .box-info .pigbreeder span {
+line-height: 5px;
+}
+
+
+
+
+
+#content main .table-data {
+	align-items: start; 
+	display: flex;
+	flex-wrap: wrap;
+	grid-gap: 24px;
+	margin-top: 24px;
+	width: 100%;
+	color: var(--dark);
+}
+#content main .table-data > div {
+	border-radius: 20px;
+	background: var(--light);
+	padding: 24px;
+	overflow-x: auto;
+}
+#content main .table-data .head {
+	display: flex;
+	align-items: center;
+	grid-gap: 16px;
+	margin-bottom: 24px;
+}
+#content main .table-data .head h3 {
+	margin-right: auto;
+	font-size: 24px;
+	font-weight: 600;
+}
+#content main .table-data .head button {
+	background-color: transparent;
+	border:none;
+}
+#content main .table-data .head .bx {
+	cursor: pointer;
+	color: var(--dark);
+}
+
+#content main .table-data .order {
+	flex-grow: 1;
+    flex-basis: 500px;
+    transition: all 0.5s ease;
+}
+#content main .table-data .order.collapsed {
+    flex-basis: 480px;
+overflow: hidden;
+    height: 80px;  /* Adjust this to the height you want when the `.order` container is collapsed */
+}
+
+
+
+#content main .table-data .order table {
+	width: 100%;
+	border-collapse: collapse;
+}
+#content main .table-data .order table th {
+	padding-bottom: 12px;
+	font-size: 13px;
+	text-align: left;
+	border-bottom: 1px solid var(--lessgreen);
+}
+#content main .table-data .order table td {
+	padding: 16px 0;
+}
+
+#content main .table-data .order table tr .first{
+	display: flex;
+	align-items: center;
+	grid-gap: 12px;
+	padding-left: 6px;
+}
+
+#content main .table-data .order table td img {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+#content main .table-data .order table tbody tr:hover {
+	background: var(--grey);
+}
+#content main .table-data .order table tr td .status {
+	font-size: 10px;
+	padding: 6px 16px;
+	color: #ffff;
+	border-radius: 20px;
+	font-weight: 700;
+}
+#content main .table-data .order table tr td .status.completed {
+	background: var(--green);
+}
+#content main .table-data .order table tr td .status.pending {
+	background: var(--yellow);
+	width:92px;
+	height:30px;
+	padding-left:10px;
+}
+#content main .table-data .todo {
+	width: 100%;
+	flex-grow: 1;
+	flex-basis: 200px;
+	overflow: auto;
+	transition: all 0.5s ease;
+}
+#content main .table-data .todo.collapsed {
+    flex-basis: 180px;
+	height: 80px;
+overflow: hidden;
+}
+#content main .table-data .todo .head{
+	width: 100%;
+}
+#content main .table-data .todo .todo-list {
+	width: 100%;
+	padding-top: 5px;
+	max-height: 400px;
+	overflow: auto;
+}
+#content main .table-data .todo .todo-list a{
+text-decoration: none;
+color: inherit;
+}
+#content main .table-data .todo .todo-list li{
+	width: 100%;
+	margin-bottom: 20px !important;
+	background: var(--grey);
+	border-radius: 10px;
+	padding: 8px 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+#content main .table-data .todo .todo-list li:hover{
+	transform: translateY(-5px); /* Add hover effect */
+	background: var(--grey);
+ 
+}
+
+#content main .table-data .todo .todo-list li .bx {
+	cursor: pointer;
+	color: var(--red);
+	font-size: 20px;
+}
+#content main .table-data .todo .todo-list li .cont{
+display: flex;
+ width: 100%; 
+ justify-content: space-between; 
+ align-items: center;
+}
+#content main .table-data .todo .todo-list li .cont a{
+text-decoration: none;
+}
+#content main .table-data .todo .todo-list li button{
+	border: none;
+	background-color: transparent;
+}
+#content main .table-data .todo .todo-list li .mid{
+text-align: center;
+}
+#content main .table-data .todo .todo-list li .mid p{
+	margin: 0;
+}
+#content main .table-data .todo .todo-list .Farrowing .name{
+	color: var(--yellow);
+	
+}
+#content main .table-data .todo .todo-list .Weaning .name{
+	color: var(--green);
+	
+}
+#content main .table-data .todo .todo-list .default-class .name{
+	color: var(--dark);
+	
+}
+
+#content main .table-data .todo .todo-list li .mid .Farrowing{
+	border: 1px solid var(--yellow);
+	border-radius: 10px;
+	color: var(--yellow);
+	padding: 5px;
+	background-color: transparent;
+}
+#content main .table-data .todo .todo-list li .mid .Weaning{
+	border: 1px solid var(--green);
+	border-radius: 10px;
+	color: var(--green);
+	padding: 5px;
+	background-color: transparent;
+}
+#content main .table-data .todo .todo-list li .mid .default-class{
+	border: 1px solid var(--dark);
+	border-radius: 10px;
+	color: var(--dark);
+	padding: 5px;
+	background-color: transparent;
+}
+#content main .table-data .todo .todo-list li .mid .date{
+	font-size: 12px;
+}
+#content main .table-data .todo .todo-list .Farrowing {
+	border-left: 10px solid var(--yellow);
+}
+
+#content main .table-data .todo .todo-list .default-class {
+	border-left: 10px solid var(--dark);
+}
+
+
+#content main .table-data .todo .todo-list .Weaning {
+	border-left: 10px solid var(--green);
+}
+
+#content main .table-data .todo .todo-list li:last-child {
+	margin-bottom: 0;
+}
+ .status{
+	color:#fff;
+	border-color:var(--yellow);
+
+}
+/* MAIN */
+/* MAIN */
+footer{
+	background-color: var(--light);
+	padding: 20px;
+  }
+  
+  footer .footer-bottom .con .text-center .copy-right  {
+	color: var(--dark);
+  }
+  
+/* CONTENT */
+
+/* managapage */
+#content main .card{
+	padding: 20px;
+	box-shadow: 1px 4px 10px var(--gray);
+margin: 50px;
+	border-radius:25px;
+	
+}
+#content main .card, .card .card-header, .card .card-body{
+	border:none;
+	background-color: var(--light);
+}
+#content main .card .card-header{
+	padding:20px;
+	border-radius:25px 25px 0px 0px;
+	color:var(--dark);
+}
+#content main .card .card-body{
+	padding-bottom: 30px;
+	border-radius:0px 0px 25px 25px;
+}
+
+#content main .card .card-body .row label{
+	color:var(--dark)
+}
+ .managepict{
+color: var(--dark);
+ }
+/* managapage */
+
+/* data tables */
+.page-item.active .page-link {
+    z-index: 3  !important;;
+    color: #fff  !important;;
+    background-color:var(--green)  !important;;
+    border-color:var(--green)  !important;
+}
+
+/* data tables */
+
+/* Modal Content */
+
+ .modal-content .modal-body {
+	padding:0px 50px 0px 50px;
+    border: none; /* This will remove the border around the entire modal content */
+}
+.modal-content .modal-body .text-center .confirm{
+	margin-top: 10px;
+	 font-weight: bold;
+	 color:#000;
+}
+.modal .modal-body label{
+color:var(--darker)!important;
+}
+.custom-header .modal-title {
+    text-align: center;
+    width: 100%;
+}
+  .modal-header,
+ .modal-footer {
+  border: none !important;
+}
+
+.modal{
+	z-index: 3000 !important;
+}
+.modal .modal-header .modal-title{
+	color:var(--green);
+}
+
+.modal-body tr,.modal-body td{
+	background-color: var(--light);
+	color:var(--dark);
+}
+.modal-dialog .modal-body table td {
+	padding: 16px 0;
+}
+/* Modal Content */
+
+/* Login */
+
+.green{
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	height: 100%;
+    width: 50%;
+	z-index: -1;
+}
+
+.wrapper{
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap :7rem;
+	overflow: hidden;
+    padding: 0 2rem;
+}
+
+.image{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+    margin-bottom: -40%;
+}
+
+.wrapper .loginan{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	text-align: center;
+}
+
+.wrapper .image img{
+	width: 500px;
+    margin-left: 250px;
+}
+
+.wrapper form{
+	width: 360px;
+}
+
+.wrapper .loginan img{
+    height: 100px;
+}
+
+.wrapper .loginan h1{
+	margin: 15px 0;
+	color: #1c5f3d;
+    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	text-transform: uppercase;
+	font-size: 2.9rem;
+}
+
+.wrapper .loginan .input-div{
+	position: relative;
+    display: grid;
+    grid-template-columns: 7% 93%;
+    margin: 25px 0;
+    padding: 5px 0;
+    border-bottom: 2px solid #d9d9d9;
+}
+
+.wrapper .loginan .input-div.user{
+	margin-top: 0;
+}
+
+.wrapper .icon{
+	color: #d9d9d9;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.wrapper .icon i{
+	transition: .3s;
+}
+
+.wrapper .input-div > div{
+    position: relative;
+	height: 45px;
+}
+
+.wrapper .input-div > div > h5{
+	position: absolute;
+	left: 10px;
+	top: 10%;
+	transform: translateY(-50%);
+	color: #999;
+	font-size: 18px;
+	transition: .3s;
+}
+
+.wrapper .input-div:before, .input-div:after{
+	content: '';
+	position: absolute;
+	bottom: -2px;
+	width: 0%;
+	height: 2px;
+	background-color: #036035;
+	transition: .4s;
+}
+
+.wrapper .input-div:before{
+	right: 50%;
+}
+
+.wrapper .input-div:after{
+	left: 50%;
+}
+
+.wrapper .input-div.active:before, .input-div.active:after{
+	width: 50%;
+}
+
+.wrapper.input-div.active > div > h5{
+	top: -5px;
+	font-size: 15px;
+}
+
+.wrapper .input-div.active > .icon > i{
+	color: #036035;
+}
+
+.wrapper .input-div > div > input{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+	outline: none;
+	background: none;
+	
+	font-size: 1.2rem;
+	color: #555;
+	font-family: 'poppins', sans-serif;
+}
+
+.wrapper .input-div.pass{
+	margin-bottom: 30px;
+}
+
+
+.wrapper .btn-login{
+	display: block;
+	width: 100%;
+	height: 50px;
+	border-radius: 25px;
+	outline: none;
+	border: none;
+	background-image: linear-gradient(to right, #036035, #036035, #32be8f);
+	background-size: 200%;
+	font-size: 1.2rem;
+	color: #fff;
+	font-family: 'Poppins', sans-serif;
+	text-transform: uppercase;
+	margin: 1rem 0;
+	cursor: pointer;
+	transition: .5s;
+}
+.wrapper .btn-login:hover{
+	background-position: right;
+}
+
+
+/* Login */
+
+#filterButton,#filterButtons{
+	background-color: var(--blue);
+	color: #fff;
+	padding: 5px 10px 1px 8px;
+	border: none;
+	font-size: 15px;
+	border-radius:8px;
+}
+
+
+
+@media screen and (max-width: 768px) {
+	.care-timeline{
+		padding: 20px;
+	}
+	.care-task {
+		font-size: 12px;
+		padding-left:1px;
+	}
+	
+	.moveModalBtn{
+		font-size:12px;
+	}
+	.moveModalBtn i{
+		font-size:15px;
+	}	
+	#content main .table-data .todo {
+		min-width: 300px;
+	
+	}
+	#content main .table-data .todo .head {
+		min-width: 300px;
+	}
+	#content main .table-data .todo .todo-list{
+		min-width: 70% !important;
+		padding: 0;
+	}
+	.feedingguide figure .rounded-start{
+		height: 100%;
+		width:100%;
+	}
+	#content main .card .card-body .row label{
+		margin-top: 20px;
+		}
+	#content main .card{
+	margin: 20px;
+		box-shadow: 1px 4px 10px var(--gray);
+		border-radius:25px;
+	}
+
+	.care-timeline .care {
+		padding:0px 30px 0px 30px;
+	}
+
+	 #content main .bred .card .row .image-container .image-overlay{
+		bottom: 0;
+        top: auto;
+        right: 0; /* Positioned to the right */
+        height: 30%; /* Cover the entire height */
+        width: 100%; /* Width on the right side */
+        background: linear-gradient(to top, var(--light), rgba(255, 255, 255, 0));
+	}
+	#content main .table-data .order .heads{
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+	#content main .table-data .order .heads input{
+		width: 100%; /* Optional, if you want the search input to take full width on mobile */
+	}
+	#content main .table-data .order .heads button {
+	margin-top: 10px;
+			}
+	#content main .table-data .order .left h1 {
+		font-size: 22px;
+		font-weight: 600;
+		margin-bottom: 10px;
+		color: var(--green);
+	}
+	
+	
+	#content main .table-data .order .left .openModalBtn{
+		background-color: var(--green);
+		padding:8px 13px 8px 13px;
+		border:1px solid var(--lessgreen);
+		border-radius:10px;
+		color:white;
+		font-size:15px;
+		
+	}
+	#content main .table-data .order .left .openModalBtn i{
+	color:#ffff;
+	font-size:20px;
+	}
+	
+	#sidebar {
+		width: 250px;
+	}
+
+	#content {
+		width: calc(100% - 60px);
+		left: 250px;
+	}
+
+	
+	.modal .modal-dialog {
+		width: 100%;
+		z-index: 6666;
+	  }
+}
+
+
+
+
+
+
+@media screen and (max-width: 576px) {
+	#content nav form .form-input input {
+		display: none;
+	}
+
+	#content nav form .form-input button {
+		width: auto;
+		height: auto;
+		background: transparent;
+		border-radius: none;
+		color: var(--dark);
+	}
+
+	#content nav form.show .form-input input {
+		display: block;
+		width: 100%;
+	}
+	#content nav form.show .form-input button {
+		width: 36px;
+		height: 100%;
+		border-radius: 0 36px 36px 0;
+		color: var(--light);
+		background: var(--red);
+	}
+
+	#content nav form.show ~ .notification,
+	#content nav form.show ~ .profile {
+		display: none;
+	}
+
+	#content main .box-info {
+		grid-template-columns: 1fr;
+	}
+
+	#content main .table-data .head {
+		min-width: 420px;
+	}
+	#content main .table-data .order table {
+		min-width: 420px;
+	}
+	#content main .table-data .todo .todo-list {
+		min-width: 420px;
+	}
+}
