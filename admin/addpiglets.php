@@ -8,6 +8,7 @@ if (isset($_POST['add'])) {
     $pigname = $_POST['name'];
     $gender = $_POST['gender'];
     $status = $_POST['status'];
+    $breed = $_POST['breed'];
     $growingphase_id = $_POST['id'];
     $filename = null;
 
@@ -21,12 +22,13 @@ if (isset($_POST['add'])) {
             }
         }
 
-        $query = $dbh->prepare("INSERT INTO piglets(growinphase_id, name, gender, status, img)
-                                VALUES(:growinphase_id, :name, :gender, :status, :pict)");
+        $query = $dbh->prepare("INSERT INTO piglets(growinphase_id, name, gender,breed, status, img)
+                                VALUES(:growinphase_id, :name, :gender,:breed, :status, :pict)");
 
         $query->bindParam(':growinphase_id', $growingphase_id, PDO::PARAM_INT);
         $query->bindParam(':name', $pigname, PDO::PARAM_STR);
         $query->bindParam(':gender', $gender, PDO::PARAM_STR);
+        $query->bindParam(':breed', $breed, PDO::PARAM_STR);
         $query->bindParam(':status', $status, PDO::PARAM_STR);
         $query->bindParam(':pict', $filename, PDO::PARAM_STR);
 

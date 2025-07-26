@@ -566,6 +566,19 @@ if(isset($_POST['update'])){
     </div>
     <br>
     <div class="row">
+    <div class="col">
+    <label for="Breed">Breed</label>
+  <select name="breed" id="breed" class="form-select form-select-sm" aria-label="breedclass">
+  <option selected>Select</option>
+  <option value="Landrace">Landrace</option>
+  <option value="Duroc">Duroc</option>
+  <option value="Hampshire">Hampshire</option>
+  <option value="Pietrain">Pietrain</option>
+</select>
+    </div>
+    </div>
+    <br>
+    <div class="row">
             
             <div class="col">
             <label for="weandate">Gender: &nbsp;</label>

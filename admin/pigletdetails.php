@@ -424,6 +424,7 @@ if(isset($_POST['addcull'])){
     </div>
     </div>
                 <p class="card-text"><span>Gender:</span> <?php echo $pig['gender']; ?></p>
+                <p class="card-text"><span>Breed:</span> <?php echo $pig['breed']; ?></p>
                 <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
                 <p class="card-text"><span>Weaned Date:</span> <?php echo $weaneddate ?></p>
                 <p class="card-text"><span>Proceed to <?php 
