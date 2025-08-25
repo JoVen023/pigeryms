@@ -53,7 +53,7 @@ else{
         <div class="table-data">
 				<div class="order">
 				<div class="left">
-					<h1>Pig Orders</h1>
+					<h1>Piglet Orders</h1>
 				</div>
 					<table id="myTable">
 						<thead>
@@ -75,7 +75,7 @@ FROM tblusers
 left JOIN tblorders ON tblusers.id = tblorders.cust_id 
 LEFT JOIN tblorderdetails ON tblorders.id = tblorderdetails.order_id 
 WHERE tblorders.deleted = 0 
-AND tblorders.piglets = 0
+AND tblorders.piglets = 1
   AND tblorderdetails.sow_id != 0 
 ORDER BY FIELD(tblorders.orderstatus, 'Pending', 'Completed')
 ";

@@ -409,6 +409,7 @@ if(isset($_POST['addcull'])){
             <h2 class="card-title"><?php echo $pig['name']; ?></h2>
         </div>
         <div class="right-section"> 
+            <p class="card-text <?php echo $pig['pstatus']; ?>"><?php echo $pig['pstatus']; ?></p>
         <?php if (!empty($qrImagePath)): ?>
     <a href="print_qr.php?img=<?php echo urlencode($qrImagePath); ?>&name=<?php echo urlencode($pig['name']); ?>"
        class="btn btn-sm"
@@ -417,8 +418,10 @@ if(isset($_POST['addcull'])){
        <i class='bx bx-qr-scan'></i>
     </a>
 <?php endif; ?>
-
-        <p class="card-text <?php echo $pig['pstatus']; ?>"><?php echo $pig['pstatus']; ?></p>
+ <a href="printpigletdetails.php?id=<?php echo urlencode($pig['id']);?>" class="btn btn-sm" title="Print Piglets Details" target="_blank">
+ <i class='bx bx-printer'></i>
+ </a>
+        
         <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" ><i class='bx bx-trash'></i></button>
         
     </div>

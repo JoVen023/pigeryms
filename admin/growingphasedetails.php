@@ -274,7 +274,72 @@ if(isset($_POST['update'])){
 
 
 
-	
+if (isset($_POST['sellpiglets'])) {
+    $growingphase_id = $_POST['id'];
+    $name = $_POST['name'];
+    
+    $farrowed_Date = $_POST['farrowed'];
+    $piglet_prices_json = $_POST['piglet-prices'] ?? null;
+    $piglet_prices = json_decode($piglet_prices_json, true);
+
+    $totalprice = 0;
+    if ($piglet_prices) {
+        foreach ($piglet_prices as $pigletdetails) {
+            $totalprice += $pigletdetails['price'];
+        }
+    }
+
+    // insert parent sale record
+    $stmt = $dbh->prepare("INSERT INTO tblpiglet_for_sale
+        (growingphase_id, name, farrowed_Date, price, status, created)
+        VALUES (:growingphase_id, :name, :farrowed_Date, :price, 'AVAILABLE', CURDATE())");
+
+    $stmt->bindParam(':growingphase_id', $growingphase_id, PDO::PARAM_INT);
+    $stmt->bindParam(':name', $name, PDO::PARAM_STR);
+    $stmt->bindParam(':farrowed_Date', $farrowed_Date, PDO::PARAM_STR);
+    $stmt->bindParam(':price', $totalprice, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $lasttblpiglet_for_sale_id = $dbh->lastInsertId();
+
+    $updategroup = $dbh->prepare("UPDATE tblgrowingphase SET posted = TRUE WHERE id = :id");
+
+    $updategroup->execute([':id'=>$growingphase_id]);
+    
+    try {
+        $stmtinsertpigletdetails = $dbh->prepare("INSERT INTO tblpiglet_for_sale_details
+        (tblpiglet_for_sale_id, price, piglet_weight, gender, img, status, created)
+        VALUES (:tblpiglet_for_sale_id, :price, :weight, :gender, :img, 'AVAILABLE', CURDATE())");
+    
+
+        foreach ($piglet_prices as $i => $pigletdetails_added) {
+            // match file by index
+            if (isset($_FILES['pictpiglets']['tmp_name'][$i]) && $_FILES['pictpiglets']['error'][$i] === UPLOAD_ERR_OK) {
+                $fileName  = basename($_FILES['pictpiglets']['name'][$i]);
+                $tmpName   = $_FILES['pictpiglets']['tmp_name'][$i];
+                $uploadDir = 'img/img_piglets_for_sale/';
+                $targetFile = $uploadDir . $fileName;
+
+                if (move_uploaded_file($tmpName, $targetFile)) {
+                    $stmtinsertpigletdetails->execute([
+                        ':tblpiglet_for_sale_id' => $lasttblpiglet_for_sale_id,
+                        ':price'  => $pigletdetails_added['price'],
+                        ':weight' => $pigletdetails_added['weight'],
+                        ':gender'  => $pigletdetails_added['pigletgender'],
+                        ':img'    => $fileName
+                    ]);
+                }
+            }
+        }
+
+        echo "<script>alert('Piglets Posted successfully!'); 
+              window.location.href='growingphasedetails.php?id=" . $growingphase_id . "';</script>";
+    } catch (PDOException $e) {
+        header("Location: growingphasedetails.php?id=$growingphase_id&error=" . urlencode("PDO Exception: " . $e->getMessage()));
+        exit;
+    }
+}
+          
 	?>
 
     <!DOCTYPE html>
@@ -389,6 +454,8 @@ if(isset($_POST['update'])){
 
                 
     <button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+    <button type="button" class="btn btn-sm sellModalBtn <?= ($stat == "PiggyBloom") ? '': 'd-none'  ?>" title="Sell Piglets" data-bs-toggle="modal" data-bs-target="#sellModal" data-pigid="<?php echo $pig['id']; ?>" data-totalpiglets="<?php echo $pig['pigs']; ?> ">Sell this Piglets</button>
+
 
 
     <!-- deletepig  Modal -->
@@ -492,6 +559,103 @@ if(isset($_POST['update'])){
 
                     </div>    
     <!-- update pig Modal -->
+
+
+
+     <!-- sell pig Modal -->
+
+     <div class="modal fade" id="sellModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header custom-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Sell Piglets</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+        <form id="myForm" action="<?=$_SERVER['REQUEST_URI']?>" method="POST" enctype="multipart/form-data">
+        <div class="row">
+        <input type="hidden" name="id" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['id']; ?>">
+        <input type="hidden" name="sow_id" class="form-control"  value="<?php echo $pig['sow_id']; ?>">
+        <div class="col">
+    <label for="fsowname">Name</label>
+        <input type="text" id="fsowname" name="name" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['sowname']; ?>" autocomplete="given name">
+    </div>
+    <div class="col">
+            <label for="win">Farrowed Date</label>
+        <input type="date" name="farrowed" id="farrowed" class="form-control" placeholder="farrowed date" aria-label="farrowed date" value="<?php echo $pig['weaneddate']; ?>" readonly>
+            </div>
+
+    </div>
+    <br>
+    <div class="row">
+        <h5>Add Price per Piglet</h5>
+    </div>
+    <div class="row">
+    <div class="col">
+    <label for="pictpiglets">Picture</label>
+    <input type="file" id="pictpiglets" name="pictpiglets[]" class="form-control" multiple>
+    <input type="hidden" id="piglet-prices" name="piglet-prices" class="form-control form-control-sm rounded-0">
+</div>
+<div class="col">
+<label for="pigletgender">Gender</label>
+<select name="pigletgender" id="pigletgender" class="form-select form-select-sm" aria-label="weightclass">
+  <option selected>Select</option>
+  <option value="Male">Male</option>
+  <option value="Female">Female</option>
+</select>
+
+
+   
+</div>
+<div class="col">
+    <label for="weight">Weight</label>
+    <input type="number" id="piglet_weight" name ="weight" class="form-control" placeholder="Kg">
+</div>
+
+<div class="col">
+    <label for="priceInput">Price</label>
+    <input type="number" id="priceInput" name = "priceInput" class="form-control" placeholder="Pesos">
+</div>
+
+<div class="col d-flex flex-column">
+    <input type="button" class="form-control btn btn-dark mt-auto" id="price-add" value="ADD">
+</div>
+
+    </div>
+    <div class="row ">
+    </div>
+    <br>
+    <div class="row">
+<div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th scope="col">Image</th>
+                            <th scope="col">Weight</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="piglets-children">
+                        </tbody>
+                      </table>
+                    </div>
+</div>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="sellpiglets" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+        </div>
+    </div>
+                    </div>
+
+                    </div>    
+    <!-- sell pig Modal -->
+
+
     </div>
     </div>
     </div>
@@ -661,7 +825,123 @@ if(isset($_POST['update'])){
         <!-- CONTENT -->
         
     <script>
+
+
     document.addEventListener("DOMContentLoaded", function () {
+
+        let addpigletsprice = document.getElementById("price-add");
+        let pigletsdetails= [];
+
+
+
+addpigletsprice.addEventListener('click', ()=>{
+            let img = document.getElementById("pictpiglets");
+            let weight = document.getElementById("piglet_weight");
+            let pigletgender = document.getElementById("pigletgender");
+            let price = document.getElementById("priceInput");
+
+ if(!img.files.length){
+    alert("Please add an image.");
+    return;
+ }
+ if(!weight.value){
+    alert("Please input a weight.");
+    return;
+ }
+ if(!pigletgender.value){
+    alert("Please input a gender.");
+    return;
+ }
+
+ if (!price.value){
+    alert("Please input a price.");
+    return;
+ }
+
+ let fileIndex = pigletsdetails.length;
+ let rawFileName = img.files[0].name;
+let newpiglets = {
+    "img": rawFileName,
+    "weight":weight.value,
+    "pigletgender":pigletgender.value,
+    "price":price.value,
+    "fileIndex": fileIndex
+}
+        
+        pigletsdetails.push(newpiglets);
+        document.getElementById("piglet-prices").value = JSON.stringify(pigletsdetails);
+
+
+
+        let piglets_child = document.getElementById("piglets-children");
+        let pigletrow = document.createElement("tr");
+
+
+        let td1 = document.createElement("td");
+        let td2 = document.createElement("td");
+        let td3 = document.createElement("td");
+        let td4 = document.createElement("td");
+        let td5= document.createElement("td");
+
+        let previewUrl = URL.createObjectURL(img.files[0]);
+        let pigletimg = document.createElement("img");
+        pigletimg.src = previewUrl;
+        pigletimg.width = 60;
+        pigletimg.height = 60;
+        td1.appendChild(pigletimg);
+
+        let fileInputClone = img.cloneNode();
+fileInputClone.name = "pictpiglets[]";
+fileInputClone.style.display = "none";
+fileInputClone.files = img.files;
+td1.appendChild(fileInputClone);
+
+        // td1.innerText =  newpiglets.img;
+        td3.innerText = newpiglets.weight;
+        td4.innerText = newpiglets.price;
+        td2.innerText = newpiglets.pigletgender;
+
+        [td1,td2,td3,td4,td5].forEach(td=>td.classList.add("text-center"));
+
+
+        let removebutton = document.createElement('button');
+        removebutton.innerText = "Remove";
+        removebutton.classList.add("btn","btn-dark");   
+        removebutton.addEventListener("click",()=>{
+            pigletrow.remove();
+            pigletsdetails = pigletsdetails.filter(p => p !== newpiglets);
+    document.getElementById('piglet-prices').value = JSON.stringify(pigletsdetails);
+
+
+        });
+
+        td5.appendChild(removebutton);
+        pigletrow.appendChild(td1);
+        pigletrow.appendChild(td2);
+        pigletrow.appendChild(td3);
+        pigletrow.appendChild(td4);
+        pigletrow.appendChild(td5);
+
+        piglets_child.appendChild(pigletrow);
+
+        document.getElementById('piglet-prices').value = JSON.stringify(pigletsdetails);
+
+        weight.value = "";
+        price.value = "";
+        pigletgender.value = "";
+        });
+    
+
+
+
+
+
+
+
+
+
+
+
         const unhealthyRadio = document.getElementById("UnHealthy");
         const healthyRadio = document.getElementById("Healthy");
         const extraFields = document.getElementById("unhealthyFields");
@@ -677,6 +957,8 @@ if(isset($_POST['update'])){
         unhealthyRadio.addEventListener("change", toggleUnhealthyFields);
         healthyRadio.addEventListener("change", toggleUnhealthyFields);
     });
+
+
         $(document).ready(function() {
 
         $("#searchInput").on("keyup", function() {

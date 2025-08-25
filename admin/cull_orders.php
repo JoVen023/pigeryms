@@ -53,7 +53,7 @@ else{
         <div class="table-data">
 				<div class="order">
 				<div class="left">
-					<h1>Orders List</h1>
+					<h1>Cull Orders</h1>
 				</div>
 					<table id="myTable">
 						<thead>

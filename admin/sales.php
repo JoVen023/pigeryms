@@ -85,7 +85,7 @@ else{
 						<?php 
 $sql ="SELECT tblusers.id, tblusers.FullName, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
 FROM tblusers 
-JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed'";
+JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.piglets = 0";
 $query3 = $dbh->prepare($sql);
 $query3->execute();
 $results=$query3->fetchAll(PDO::FETCH_OBJ);
@@ -144,6 +144,107 @@ foreach($results as $result){
                 </div>
 				</div>
 </div>
+
+
+
+<div class="table-data">
+				<div class="order">
+				<div class="left">
+					<h1>Piglets Sold</h1>
+				</div>
+				<div class="date-filter">
+				
+    <label for="startDate">Date Range Sorting: &nbsp;  Start Date:</label>
+    <input type="date" id="startDate" name="startDate">
+
+    <label for="endDate">&nbsp; &nbsp;  End Date:</label>
+    <input type="date" id="endDate" name="endDate">
+
+    <button id="filterButton"><i class='bx bx-filter-alt'></i></button>
+</div>
+					<table id="myTable">
+						<thead>
+							<tr>
+                                <th>ID</th>
+								<th>Customer Name</th>
+								<th>Date Ordered</th>
+                                <th>Date Delivered</th>
+                                <th>Mode Of Payment</th>
+                                <th>Total Amount</th>
+								<th>Details</th>
+							</tr>
+						</thead>
+						<tbody>
+						<?php 
+$sql ="SELECT tblusers.id, tblusers.FullName, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
+FROM tblusers 
+JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.piglets = 1";
+$query3 = $dbh->prepare($sql);
+$query3->execute();
+$results=$query3->fetchAll(PDO::FETCH_OBJ);
+
+foreach($results as $result){
+	$orderdate = new DateTime($result->orderdate);
+	$formattedorderdate = $orderdate->format('F j, Y');
+
+    $deliverdate = new DateTime($result->deliverydate);
+	$formatteddeliverdate = $deliverdate->format('F j, Y');
+    
+?>
+							<tr>
+                            <td>
+	<p><?php echo htmlentities($result->id); ?></p>
+		</td>
+	<td>
+	<p><?php echo htmlentities($result->FullName); ?></p>
+		</td>
+	<td><?php echo htmlentities($formattedorderdate); ?></td>
+    <td><?php echo htmlentities($formatteddeliverdate); ?></td>
+	<td><?php echo htmlentities($result->mop); ?></td>
+	<td><span>&#8369;</span><?php echo htmlentities(number_format($result->total_amount,2)); ?></td>
+    <td>  <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#confirmModal" data-orderid="<?php echo htmlentities($result->order_id); ?>"  
+    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button></td>
+	
+</tr>
+
+<?php 
+} 
+?>	
+						</tbody>
+					</table>
+
+
+
+					
+			
+
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header custom-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Order Details</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+     
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       
+      </div>
+    </div>
+  </div>
+                </div>
+				</div>
+</div>
+
+
+
+
+
+
+
+
 
 <div class="table-data">
 				<div class="order">

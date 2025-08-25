@@ -27,22 +27,32 @@
             try {
              
                     // Retrieve the order details
-                    $sqlOrderDetails = "SELECT name FROM tblorderdetails WHERE order_id = :orderId";
+                    $sqlOrderDetails = "SELECT pig_id, name, piglet FROM tblorderdetails WHERE order_id = :orderId";
                     $stmtOrderDetails = $dbh->prepare($sqlOrderDetails);
                     $stmtOrderDetails->bindParam(':orderId', $orderId, PDO::PARAM_INT);
                     $stmtOrderDetails->execute();
                     $orderDetails = $stmtOrderDetails->fetchAll(PDO::FETCH_ASSOC);
-        
-                    // Loop through the order details and reset the status of each pig
+                
                     foreach ($orderDetails as $orderDetail) {
-                        $sqlUpdateStatus = "UPDATE tblpigforsale SET status = :status WHERE name = :name";
-                        $stmtUpdateStatus = $dbh->prepare($sqlUpdateStatus);
-                        $stmtUpdateStatus->bindValue(':status', NULL); // or use NULL to set the status as NULL
-                        $stmtUpdateStatus->bindValue(':name', $orderDetail['name']);
-                        $stmtUpdateStatus->execute();
+                        if ($orderDetail['piglet'] == 1) {
+                            $sqlUpdateStatus = "UPDATE tblpiglet_for_sale_details 
+                                                SET status = :status 
+                                                WHERE id = :id";
+                            $stmtUpdateStatus = $dbh->prepare($sqlUpdateStatus);
+                            $stmtUpdateStatus->bindValue(':status', "AVAILABLE"); 
+                            $stmtUpdateStatus->bindValue(':id', $orderDetail['pig_id'], PDO::PARAM_INT);
+                            $stmtUpdateStatus->execute();
+                        } else {
+                            $sqlUpdateStatus = "UPDATE tblpigforsale 
+                                                SET status = :status 
+                                                WHERE name = :name";
+                            $stmtUpdateStatus = $dbh->prepare($sqlUpdateStatus);
+                            $stmtUpdateStatus->bindValue(':status', NULL, PDO::PARAM_NULL); 
+                            $stmtUpdateStatus->bindValue(':name', $orderDetail['name']);
+                            $stmtUpdateStatus->execute();
+                        }
                     }
 
-                // Use prepared statements for deleting rows from the "tblorders" table
                 $sqlDeleteOrder = "DELETE FROM tblorders WHERE id = :orderId";
                 $stmtDeleteOrder = $dbh->prepare($sqlDeleteOrder);
                 $stmtDeleteOrder->bindParam(':orderId', $orderId, PDO::PARAM_INT);

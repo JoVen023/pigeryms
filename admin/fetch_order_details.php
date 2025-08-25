@@ -43,7 +43,6 @@ if ($_POST['orderId']) {
             // $minWeight = isset($matches[0][0]) ? (int) $matches[0][0] : 0;
             // $maxWeight = isset($matches[0][1]) ? (int) $matches[0][1] : 0;
 
-            list($minWeight, $maxWeight) = array_map('trim', explode('-', str_replace(['kg', 'KG'], '', $result->weight_class)));
           
             $html .= '<tr>';
             $html .= '<td>' . htmlentities($result->id) . '</td>';
@@ -62,8 +61,7 @@ if ($_POST['orderId']) {
             data-detail-id="' . htmlentities($result->id) . '" 
             data-sow-id="' . htmlentities($result->sow_id) . '" 
             data-price="' . htmlentities($result->price) . '" 
-            data-min-weight="' . $minWeight . '" 
-            data-max-weight="' . $maxWeight . '" 
+           value="' . htmlentities($result->weight_class) . '"
             placeholder="Weight" required>';
             $html .= '<div class="text-danger weight-error" style="display:none; font-size: 0.9em;"></div>';
             

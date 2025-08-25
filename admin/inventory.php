@@ -10,6 +10,7 @@ header('location:index.php');
 else{
   $_SESSION['sidebarname'] = 'Inventory';
   $sow = getMenutype($dbh);
+  $pigletgroup = getPigletgroup($dbh);
 
   if(isset($_POST['feed'])){
     $feedname=$_POST['feedname'];
@@ -35,6 +36,64 @@ else{
               exit;
           }
       }
+
+
+      
+           // Update Piglets
+
+     if(isset($_POST['updatepiglets'])){
+      $id=$_POST['id'];
+      $main_id=$_POST['main_id'];
+      $groupname=$_POST['groupname'];
+      $gender=$_POST['gender'];
+      $piglet_weight = $_POST['piglet_weight'];
+      $farrow=$_POST['farrow'];
+      $price=$_POST['price'];
+  
+      function handleImageUpload($imageKey, $existingImage) {
+        if ($_FILES[$imageKey]['error'] == UPLOAD_ERR_OK) {
+            $filename = basename($_FILES[$imageKey]['name']);
+            $uploadPath = 'img/img_piglets_for_sale/' . $filename;
+            if (move_uploaded_file($_FILES[$imageKey]['tmp_name'], $uploadPath)) {
+                return $filename;
+            }
+        }
+        return $existingImage;  // If no new upload, return existing filename
+    }
+  
+    $fetchQuery = $dbh->prepare("SELECT * FROM tblpiglet_for_sale_details WHERE id = :id");
+    $fetchQuery->bindParam(':id', $id, PDO::PARAM_STR);
+    $fetchQuery->execute();
+    $currentData = $fetchQuery->fetch(PDO::FETCH_OBJ);  
+  
+    $imgMain = handleImageUpload('img', $currentData->img);
+  
+    $query3 = $dbh->prepare("UPDATE tblpiglet_for_sale SET name=:groupname, Farrowed_Date=:farrow WHERE id = :main_id");
+      $query3->bindParam(':groupname', $groupname, PDO::PARAM_STR);
+      $query3->bindParam(':farrow', $farrow, PDO::PARAM_STR);
+      $query3->bindParam(':main_id', $main_id, PDO::PARAM_STR);
+
+      $query4 = $dbh->prepare("UPDATE tblpiglet_for_sale_details SET  gender=:gender, piglet_weight=:piglet_weight, price=:price, img=:imgMain WHERE id = :id");
+      $query4->bindParam(':gender', $gender, PDO::PARAM_STR);
+      $query4->bindParam(':price', $price, PDO::PARAM_INT);
+      $query4->bindParam(':piglet_weight', $piglet_weight, PDO::PARAM_STR);
+      $query4->bindParam(':id', $id, PDO::PARAM_STR); 
+      $query4->bindParam(':imgMain', $imgMain, PDO::PARAM_STR);
+  
+      try {
+          $query4->execute();
+          $query3->execute();
+          echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'inventory.php';</script>";
+      } catch (PDOException $ex) {
+          echo $ex->getMessage();
+          exit;
+      }
+     }
+
+           // Update Piglets
+
+
+
 
 
   if(isset($_POST['pig'])){
@@ -137,7 +196,7 @@ function handleImageUpload($imageKey) {
   $fetchQuery = $dbh->prepare("SELECT * FROM tblpigforsale WHERE id = :id");
   $fetchQuery->bindParam(':id', $id, PDO::PARAM_STR);
   $fetchQuery->execute();
-  $currentData = $fetchQuery->fetch(PDO::FETCH_OBJ);
+  $currentData = $fetchQuery->fetch(PDO::FETCH_OBJ);  
 
   // Handle uploads for each image
   $imgMain = handleImageUpload('pict', $currentData->img);
@@ -205,6 +264,73 @@ if(isset($_POST['updatefeed'])){
 }
   
 
+if (isset($_POST['sellpiglets'])) {
+  $growingphase_id = $_POST['group_id'];
+  $name = $_POST['name'];
+  $farrowed_Date = $_POST['farrowed'];
+  $piglet_prices_json = $_POST['piglet-prices'] ?? null;
+  $piglet_prices = json_decode($piglet_prices_json, true);
+
+  $totalprice = 0;
+  if ($piglet_prices) {
+      foreach ($piglet_prices as $pigletdetails) {
+          $totalprice += $pigletdetails['price'];
+      }
+  }
+
+  // insert parent sale record
+  $stmt = $dbh->prepare("INSERT INTO tblpiglet_for_sale
+      (growingphase_id, name, farrowed_Date, price, status, created)
+      VALUES (:growingphase_id, :name, :farrowed_Date, :price, 'AVAILABLE', CURDATE())");
+
+  $stmt->bindParam(':growingphase_id', $growingphase_id, PDO::PARAM_INT);
+  $stmt->bindParam(':name', $name, PDO::PARAM_STR);
+  $stmt->bindParam(':farrowed_Date', $farrowed_Date, PDO::PARAM_STR);
+  $stmt->bindParam(':price', $totalprice, PDO::PARAM_INT);
+  $stmt->execute();
+
+  $lasttblpiglet_for_sale_id = $dbh->lastInsertId();
+
+  $updategroup = $dbh->prepare("UPDATE tblgrowingphase SET posted = TRUE WHERE id = :id");
+
+  $updategroup->execute([':id'=>$growingphase_id]);
+  
+  try {
+      $stmtinsertpigletdetails = $dbh->prepare("INSERT INTO tblpiglet_for_sale_details
+          (tblpiglet_for_sale_id, price, piglet_weight,gender, img, status, created)
+          VALUES (:tblpiglet_for_sale_id, :price, :piglet_weight,:gender, :img, 'AVAILABLE', CURDATE())");
+
+    
+foreach ($piglet_prices as $i => $pigletdetails_added) {
+  // match file by index
+  if (isset($_FILES['pictpiglets']['tmp_name'][$i]) && $_FILES['pictpiglets']['error'][$i] === UPLOAD_ERR_OK) {
+      $fileName  = basename($_FILES['pictpiglets']['name'][$i]);
+      $tmpName   = $_FILES['pictpiglets']['tmp_name'][$i];
+      $uploadDir = 'img/img_piglets_for_sale/';
+      $targetFile = $uploadDir . $fileName;
+
+      if (move_uploaded_file($tmpName, $targetFile)) {
+          $stmtinsertpigletdetails->execute([
+              ':tblpiglet_for_sale_id' => $lasttblpiglet_for_sale_id,
+              ':price'  => $pigletdetails_added['price'],
+              ':piglet_weight' => $pigletdetails_added['pigletweight'],
+              ':gender'  => $pigletdetails_added['pigletgender'],
+              ':img'    => $fileName
+          ]);
+      }
+  }
+}
+
+      echo "<script>alert('Piglets Posted successfully!'); 
+            window.location.href='inventory.php';</script>";
+  } catch (PDOException $e) {
+      header("Location: inventory.php &error=" . urlencode("PDO Exception: " . $e->getMessage()));
+      exit;
+  }
+}
+        
+
+
 	?>
 <!DOCTYPE html>
 <html lang="en">
@@ -251,7 +377,7 @@ if(isset($_POST['updatefeed'])){
 				<div class="order">
         <?php
 // Assuming you have a 'id' and 'sowname' column in your tblgrowingphase table
-$sqlGroups = "SELECT DISTINCT id, sowname FROM tblgrowingphase WHERE status = 'grower'";
+$sqlGroups = "SELECT DISTINCT id, name FROM tblpigforsale WHERE status NOT IN('ordered')";
 $queryGroups = $dbh->prepare($sqlGroups);
 $queryGroups->execute();
 $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
@@ -353,8 +479,8 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
 <!-- delete pig Modal -->
-<!-- update pig Modal -->
 
+<!-- update pig Modal -->
 <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -438,6 +564,7 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
             
               <?php echo $sow; ?>
             </select>
+
         </div>
         <div class="col">
   <label for="sex">Piglets</label>
@@ -489,8 +616,275 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- add pig Modal -->
 
+
+
+<!-- add piglets -->
+
+<div class="table-data">
+				<div class="order">
+        <?php
+$sqlGroups = "SELECT DISTINCT id, sowname FROM tblgrowingphase WHERE status = 'grower'";
+$queryGroups = $dbh->prepare($sqlGroups);
+$queryGroups->execute();
+$availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
+?>
+<div class="left">
+    <h1>Piglets List</h1>
+    <div class="filter-group">
+        <label for="groupFilter">Filter by Group:</label>
+        <select id="groupFilter">
+            <option value="all">All Pigs</option>
+            <?php
+            foreach ($availableGroups as $group) {
+                $value = $group['sowname'];
+                echo "<option value='$value'>$group[sowname]</option>";
+            }
+            ?>
+        </select>
+    </div>
+
+                    <button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#sellModal"
+    class="openModalBtn" ><i class='bx bx-plus-circle'></i> Add New</button>
+				</div>
+                <table id="myTable">
+						<thead>
+							<tr>  
+                                <th>ID</th>
+                                <th>Image</th>
+								                <th>Group Name</th>
+                                <th>Sex</th>
+							                	<th>Age</th>
+                                <th>Weight</th>
+                                <th>Price</th>
+                                <th>Creation Date</th>  
+                                <th>Action</th>
+                                
+							</tr>
+						</thead>
+                        
+						<tbody>
+                        <?php 
+                          
+                          $sqlpiglets = "SELECT pd.*, ps.name AS groupname, ps.farrowed_Date AS farrowed_date
+                          FROM tblpiglet_for_sale_details pd
+                          LEFT JOIN tblpiglet_for_sale ps ON pd.tblpiglet_for_sale_id = ps.id
+                          WHERE pd.status = 'AVAILABLE'";
+                          $querypiglets = $dbh->prepare($sqlpiglets);
+                          $querypiglets->execute();
+                          $resultspiglets=$querypiglets->fetchAll(PDO::FETCH_OBJ);
+                          
+                          foreach($resultspiglets as $resultpigletslist){
+                            // age
+$weaningDate = new DateTime($resultpigletslist->farrowed_date);
+$currentDate = new DateTime();  
+$weaningDate->setTime(0, 0, 0);
+$currentDate->setTime(0, 0, 0);
+$interval = $currentDate->diff($weaningDate);
+
+$daysDifference = $interval->days;
+$age = $daysDifference;
+// age
+
+                              $farrrowed = new DateTime($resultpigletslist->farrowed_date );
+                              $farrrowedddate = $farrrowed->format('F j, Y');
+                          
+                          ?>
+                              
+                              <tr>
+	<td>
+	<p><?php echo htmlentities($resultpigletslist->id); ?></p>
+		</td>
+	<td>
+	<img src="img/img_piglets_for_sale/<?php echo htmlentities($resultpigletslist->img); ?>" alt="_blank" title="<?php echo htmlentities($resultpigletslist->img); ?>">
+		</td>
+	<td><?php echo htmlentities($resultpigletslist->groupname); ?></td>
+	<td><?php echo htmlentities($resultpigletslist->gender); ?></td>  
+    <td><?php echo htmlentities($age); ?></td>
+    <td><?php echo htmlentities($resultpigletslist->piglet_weight);?> kg</td>
+    <td><span>&#8369;</span><?php echo htmlentities($resultpigletslist->price); ?></td>
+    <td><?php echo htmlentities($farrrowedddate); ?></td>
+    <!-- Button trigger modal -->
+    <td class="action">
+      <button type="button" class="btn delete" title="Delete Pig"  data-bs-toggle="modal" data-bs-target="#deletepigletModal-<?php echo htmlentities($resultpigletslist->id); ?>"><i class='bx bx-trash'></i></button>
+    <button type="button" class="btn btn-sm updateModalBtnPiglets" title="Update Piglets" data-bs-toggle="modal" data-bs-target="#updateModalpiglets" data-forpigletsid="<?php echo $resultpigletslist->id; ?>"><i class='bx bx-edit'></i></button>
+                          </td>
+    <!-- Button trigger modal -->
+  </tr>
   
-        <div class="table-data">
+<!-- deletepig  Modal -->
+<div class="modal fade" id="deletepigletModal-<?php echo htmlentities($resultpigletslist->id); ?>" tabindex="-1"  aria-labelledby="cancelModalLabel-<?php echo htmlentities($resultpigletslist->id); ?>" aria-hidden="true">
+       
+<div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                  
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        
+                    </button>
+                </div>
+                <div class="modal-body">
+                <div class="text-center">
+                    <img src="img/deletepig.svg" alt="Profile Picture" width="150px" height="150px">
+                    <h3 class="confirm">Are you sure you want to delete this piglet?</h3>
+                  </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="deletepiglet('<?php echo htmlentities($resultpigletslist->id); ?>')" name="delete">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- delete pig Modal -->
+
+<!-- update pig Modal -->
+<div class="modal fade" id="updateModalpiglets" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header custom-header">
+        <h5 class="modal-title" id="exampleModalLabel">Update Piglet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="updateFormpiglets" action="<?=$_SERVER['PHP_SELF']?>" method="POST" enctype="multipart/form-data">
+          
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" name="updatepiglets" class="btn btn-primary">Update</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>                 
+<!-- update pig Modal -->
+
+
+
+<?php 
+} 
+?>	
+						</tbody>
+					</table>
+
+     <!-- sell pig Modal -->
+
+     <div class="modal fade" id="sellModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header custom-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Sell Piglets</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+        <form id="myForm" action="<?=$_SERVER['REQUEST_URI']?>" method="POST" enctype="multipart/form-data">
+
+        <div class ="row">
+      <div class="col">
+      <label for="pigletsgrouplist">Pig Group</label>
+      <select
+              id="pigletsgrouplist"
+              name="sow"
+              class="form-select form-select-sm"
+              required="required"
+              onchange="pigletsgroupchange()">
+            
+              <?php echo $pigletgroup; ?>
+            </select>
+        </div>
+</div>
+
+        <div class="row">
+        <!-- <input type="hidden" name="id" class="form-control" placeholder="Pig name" aria-label="First name" value="" disabled> -->
+        <input type="hidden" name="group_id" id="piglet_group_id" class="form-control">
+        <div class="col">
+    <label for="groupname">Name</label>
+        <input type="text" id="group_name" name="name" class="form-control" placeholder="Pig name" aria-label="First name" autocomplete="given name" readonly>
+    </div>
+    <div class="col">
+            <label for="group_farrowed">Farrowed Date</label>
+        <input type="date" name="farrowed" id="group_farrowed" class="form-control" placeholder="farrowed date" aria-label="farrowed date" readonly>
+            </div>
+
+
+
+
+    </div>
+    <hr class="border border-dark border-1 opacity-100">
+    <div class="row">
+        <h5>Add Price per Piglet</h5>
+    </div>
+    <div class="row">
+    <div class="col">
+    <label for="pictpiglets">Picture</label>
+    <input type="file" id="pictpiglets" name="pictpiglets[]" class="form-control" multiple>
+    <input type="hidden" id="piglet-prices" name="piglet-prices" class="form-control form-control-sm rounded-0">
+</div>
+<div class="col">
+<label for="pigletgender">Gender</label>
+<select name="pigletgender" id="pigletgender" class="form-select form-select-sm" aria-label="weightclass">
+  <option selected>Select</option>
+  <option value="Male">Male</option>
+  <option value="Female">Female</option>
+</select>
+</div>
+<div class="col">
+    <label for="pigletweight">Weight</label>
+    <input type="number" id="pigletweight" name = "piweight" class="form-control" placeholder="Kg">
+</div>
+
+<div class="col">
+    <label for="priceInput">Price</label>
+    <input type="number" id="priceInput" name = "priceInput" class="form-control" placeholder="Pesos">
+</div>
+
+<div class="col d-flex flex-column">
+    <input type="button" class="form-control btn btn-dark mt-auto" id="price-add"  value="ADD">
+</div>
+
+    </div>
+    <div class="row ">
+    </div>
+    <br>
+    <div class="row">
+<div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th scope="col" class="text-center">Image</th>
+                            <th scope="col" class="text-center">Gender </th>
+                            <th scope="col" class="text-center">Weight</th>
+                            <th scope="col" class="text-center">Price</th>
+                            <th scope="col" class="text-center">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="piglets-children">
+                        </tbody>
+                      </table>
+                    </div>
+</div>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="sellpiglets" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+        </div>
+    </div>
+                    </div>
+
+                    </div>    
+    <!-- sell pig Modal -->
+
+    </div>   
+
+
+  
+        <div class="table-data d-none">
 				<div class="order">
 				<div class="left">
 					<h1>Feeds List</h1>
@@ -659,6 +1053,9 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
 
         		<!-- add feed Modal -->
 
+
+
+
 					
         </div>
 
@@ -677,59 +1074,265 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
  
 
 	<script>
+
+
+
+//pglets
+
+$(document).on("click", ".updateModalBtnPiglets", function() {
+  var forpigletsId = $(this).attr("data-forpigletsid"); 
+  $.ajax({
+    url: 'getpigdata.php', 
+    type: 'POST',
+    data: { forpigletsId: forpigletsId},  
+    dataType: 'json',  
+    success: function(response) {
+      $("#updateFormpiglets").html(`
+      <div class="row">
+      <input type="text" name="id" value="${response.id}">
+            <input type="text" name="main_id" value="${response.main_id}">
+  <div class="col">
+  <label for="fullname">Group Name</label>
+    <input type="text" name="groupname" class="form-control" value="${response.name}">
+  </div>
+  <div class="col">
+  <label for="fullname">Farrowed Date</label>
+    <input type="text" name="farrow" class="form-control" value="${response.farrowed}">
+  </div>
+ 
+</div>
+
+
+<br>
+<div class="row">
+    <div class="col">
+  <label for="fullname">Gender</label>
+ <select name="gender" class="form-select form-select-sm" aria-label="Large select example">
+  <option value="Male" ${response.gender === "Male" ? "selected" : ""}>Male</option>
+  <option value="Female" ${response.gender === "Female" ? "selected" : ""}>Female</option>
+</select>
+  </div>
+
+          <div class="col">
+  <label for="fullname">Weight</label>
+  <input type="text" name="piglet_weight" class="form-control" value="${response.piglet_weight}">
+  </div>
+     <div class="col">
+  <label for="fullname">Price</label>
+  <input type="text" name="price" class="form-control" value="${response.price}">
+</div>
+      </div>
+      <br>
+      <div class="row">
+   <div class="col">
+  <label>Add New Image:</label>
+  <input type="file" id="img" name="img" class="form-control form-control-sm rounded-0">
+  <br>
+  <img src="img/img_piglets_for_sale/${response.img}" class="rounded mx-auto d-block" alt="pig" width="150px" height="100px">
+</div>
+</div>
+      `);
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.log(textStatus, errorThrown);  
+    }
+    
+  });
+
+});
+
+//pglets
+
+
+function pigletsgroupchange() {
+    let id = document.getElementById('piglet_group_id');
+    let name = document.getElementById('group_name');
+    let farroweddate = document.getElementById('group_farrowed')
+
+    var pigletsgroupselect = document.getElementById('pigletsgrouplist');
+    var selectedParentId = pigletsgroupselect.value;
+
+    if (selectedParentId) {
+      fetch('getChildOptions.php?pigletid=' + selectedParentId)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();  
+    })
+    .then(data => {
+        if (Array.isArray(data)) {  
+            data.forEach(function(child) {
+                name.value = child.sowname;
+                name.text = child.sowname;
+                farroweddate.value = child.weaneddate;
+                farroweddate.text = child.weaneddate;
+                id.value = child.id;
+                id.text = child.id;
+            });
+        } else if (data.error) { 
+            console.log('Warning:', data.error);
+            alert('Warning: ' + data.error);  
+        } else {
+            console.log('Unexpected response:', data);  
+            alert('Unexpected error occurred.');
+        }
+    })
+    .catch(error => {
+        console.log('Error fetching child options:', error);
+        alert('An error occurred while fetching child options.');
+            });
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  let addpigletsprice = document.getElementById("price-add");
+        let pigletsdetails= [];
+
+        addpigletsprice.addEventListener('click', ()=>{
+            let img = document.getElementById("pictpiglets");
+            let pigletweight = document.getElementById("pigletweight");
+            let pigletgender = document.getElementById("pigletgender");
+            let price = document.getElementById("priceInput");
+
+ if(!img.files.length){
+    alert("Please add an image.");
+    return;
+ }
+ if(!pigletweight.value){
+    alert("Please input a weight.");
+    return;
+ }
+ if(!pigletgender.value){
+    alert("Please input a gender.");
+    return;
+ }
+
+ if (!price.value){
+    alert("Please input a price.");
+    return;
+ }
+
+ let fileIndex = pigletsdetails.length;
+ let rawFileName = img.files[0].name;
+let newpiglets = {
+    "img": rawFileName,
+    "pigletgender":pigletgender.value,
+    "pigletweight": pigletweight.value,
+    "price":price.value,
+    "fileIndex": fileIndex
+}
+        
+        pigletsdetails.push(newpiglets);
+        document.getElementById("piglet-prices").value = JSON.stringify(pigletsdetails);
+
+
+
+        let piglets_child = document.getElementById("piglets-children");
+        let pigletrow = document.createElement("tr");
+
+
+        let td1 = document.createElement("td");
+        let td2 = document.createElement("td");
+        let td3 = document.createElement("td");
+        let td4 = document.createElement("td");
+        let td5 = document.createElement("td");
+
+        let previewUrl = URL.createObjectURL(img.files[0]);
+        let pigletimg = document.createElement("img");
+        pigletimg.src = previewUrl;
+        pigletimg.width = 60;
+        pigletimg.height = 60;
+        td1.appendChild(pigletimg);
+
+        let fileInputClone = img.cloneNode();
+fileInputClone.name = "pictpiglets[]";
+fileInputClone.style.display = "none";
+fileInputClone.files = img.files;
+td1.appendChild(fileInputClone);
+
+        // td1.innerText =  newpiglets.img;
+        td2.innerText = newpiglets.pigletgender;
+        td3.innerText = newpiglets.pigletweight;
+        td4.innerText = newpiglets.price;
+
+        [td1,td2,td3,td4,td5].forEach(td=>td.classList.add("text-center"));
+
+
+        let removebutton = document.createElement('button');
+        removebutton.innerText = "Remove";
+        removebutton.classList.add("btn","btn-dark");   
+        removebutton.addEventListener("click",()=>{
+            pigletrow.remove();
+            pigletsdetails = pigletsdetails.filter(p => p !== newpiglets);
+    document.getElementById('piglet-prices').value = JSON.stringify(pigletsdetails);
+
+
+        });
+
+        td5.appendChild(removebutton);
+        pigletrow.appendChild(td1);
+        pigletrow.appendChild(td2);
+        pigletrow.appendChild(td3);
+        pigletrow.appendChild(td4);
+        pigletrow.appendChild(td5);
+
+        piglets_child.appendChild(pigletrow);
+
+        document.getElementById('piglet-prices').value = JSON.stringify(pigletsdetails);
+
+        pigletweight.value = "";
+        price.value = "";
+        pigletgender.value = "";
+        });
+    });
+
+
+
+
 $(document).ready(function () {
-    // Initialize DataTable
+  
     $('#myTable').DataTable();
 
     $('#mysecondTable').DataTable();
-    // Handle delete button clicks
 
     var dataTable = $('#myTable').DataTable();
 
-// Listen for changes in the filter dropdown
 $('#groupFilter').on('change', function() {
     var selectedValue = $(this).val();
 
-    // Update the DataTable based on the selected group
     if (selectedValue === 'all') {
-        // Show all rows if 'All Pigs' is selected
         dataTable.search('').draw();
     } else {
-        // Filter rows based on the selected group_id
-        dataTable.column(6)  // Assuming 'Group' column is at index 6
+        dataTable.column(6)  
             .search(selectedValue)
             .draw();
     }
 });
     $(document).on('click', '.delete-btn', function() {
-        // Save the pig ID to deletePigId
         deletePigId = $(this).data('id');
-        // Show the modal
         $('#deleteModal-' + deletePigId).modal('show');
     });
 
-    // Handle the "Confirm" button click
     $(document).on('click', '#confirmDelete', function() {
-        // Call deletepig
         deletepig(deletePigId);
     });
 
 
     $(document).on('click', '.delete', function() {
-        // Save the pig ID to deletePigId
         deletefeedId = $(this).data('id');
-        // Show the modal
         $('#deletefeedModal-' + deletefeedId).modal('show');
     });
 
-    // Handle the "Confirm" button click
     $(document).on('click', '#confirmDelete', function() {
-        // Call deletepig
         deletefeed(deletefeedId);
     });
 
 
 });
+
 
 function updateChildSelect() {
     var parentSelect = document.getElementById('parentSelect');
@@ -770,15 +1373,12 @@ function updateChildSelect() {
 }
 
 function deletefeed(id) {
-    // Send a POST request to delete.php
     $.ajax({
-        url: 'delete.php',  // This sends the request to delete.php
+        url: 'delete.php',  
         type: 'POST',
         data: { feedid: id },
         success: function(response) {
-            // Close the modal
             $('#deletefeedModal-' + id).modal('hide');
-            // Reload the page to update the table
             location.reload();
         },
         error: function() {
@@ -787,19 +1387,38 @@ function deletefeed(id) {
     });
 }
 
+$(document).on('click', '.deletepiglet-btn', function() {
+        deletePigId = $(this).data('id');
+        $('#deletepigletModal-' + deletePigId).modal('show');
+    });
 
+    $(document).on('click', '#confirmDelete', function() {
+      deletepiglet(deletePigId);
+    });
+
+function deletepiglet(id) {
+    $.ajax({
+        url: 'delete.php',  
+        type: 'POST',
+        data: { pigletid: id },
+        success: function(response) {
+            $('#deletepigletModal-' + id).modal('hide');
+            location.reload();
+        },
+        error: function() {
+            alert('An error occurred while trying to delete the piglet.');
+        }
+    });
+}
 
 
 function deletepig(id) {
-    // Send a POST request to delete.php
     $.ajax({
-        url: 'delete.php',  // This sends the request to delete.php
+        url: 'delete.php',  
         type: 'POST',
         data: { id: id },
         success: function(response) {
-            // Close the modal
             $('#deleteModal-' + id).modal('hide');
-            // Reload the page to update the table
             location.reload();
         },
         error: function() {
@@ -812,16 +1431,13 @@ function deletepig(id) {
 
 
     $(document).on("click", ".updateModalBtn", function() {
-  var pigId = $(this).attr("data-pigid");  // Extract pig ID from data-* attribute
-  
+  var pigId = $(this).attr("data-pigid"); 
   $.ajax({
-    url: 'getpigdata.php',  // Endpoint where the server-side code resides
+    url: 'getpigdata.php', 
     type: 'POST',
-    data: { pigId: pigId},  // Send pig ID to server
-    dataType: 'json',  // Expect JSON response from server
+    data: { pigId: pigId},  
+    dataType: 'json',  
     success: function(response) {
-      // On successful response, populate the form fields
-      // assuming response has properties id, name, sex, age, weight_class, price and img
       $("#updateForm").html(`
      
       <div class="row">
@@ -894,7 +1510,7 @@ function deletepig(id) {
       `);
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      console.log(textStatus, errorThrown);  // Log any error to console
+      console.log(textStatus, errorThrown);  
     }
     
   });
@@ -903,17 +1519,15 @@ function deletepig(id) {
 
 
 $(document).on("click", ".updatefeed", function() {
-  var feedId = $(this).attr("data-feedid");  // Extract pig ID from data-* attribute
+  var feedId = $(this).attr("data-feedid");  
   
   $.ajax({
-    url: 'getfeed.php',  // Endpoint where the server-side code resides
+    url: 'getfeed.php',  
     type: 'POST',
-    data: { feedId: feedId },  // Send pig ID to server
-    dataType: 'json',  // Expect JSON response from server
+    data: { feedId: feedId },   
+    dataType: 'json',   
     success: function(response) {
       console.log(response);
-      // On successful response, populate the form fields
-      // assuming response has properties id, name, sex, age, weight_class, price and img
       $("#updatefedForm").html(`
       <div class="row">
       <input type="hidden" name="id" value="${response.id}">
@@ -948,7 +1562,7 @@ $(document).on("click", ".updatefeed", function() {
       `);
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      console.log(textStatus, errorThrown);  // Log any error to console
+      console.log(textStatus, errorThrown);  
     }
   });
 

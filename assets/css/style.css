@@ -1477,8 +1477,12 @@ section .details {
   margin: -40px auto;
 }
 .pd{
+    height:75vh; }
+
+    .pdpgilets{
  
-    height: 85vh; }
+      height: 60vh; }
+   
 .image-columns {
     
   display: flex;
@@ -1844,7 +1848,7 @@ input.newsletter-input {
     justify-content: center;
     width: 100%;
     background-color:#eff3f0;
-    height: 70vh;
+    height: 80vh;
   margin-top: -10rem;
 }
 .listing-pages .cons{
@@ -1922,6 +1926,93 @@ select#weight option:checked {
   width: 100%;
 
 }
+/*..piglet.. */
+
+
+.piglets {
+  margin-bottom: 160px;
+  list-style-type: none;
+  padding: 23px;
+  background-color: #ffff;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 2fr));
+  grid-gap: 30px; 
+  height: 430px; 
+  overflow-y: auto; 
+}
+
+.piglets .empty{
+  height:35vh;
+  text-align:center;
+}
+.piglets li  {
+width: 100%;
+
+}
+
+.pigletcard{
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 20px;
+  justify-content: center;
+  text-align: center;
+  height: 400px;
+}
+.pigletcard .row{
+display: flex;
+flex-direction: column;
+align-items: start;
+margin: 0px;
+padding:0px;
+}
+.pigletcard .row p {
+margin: 3px 0;   
+font-size: 14px; 
+font-weight:600 ;
+line-height: 1.2; }
+
+.pigletcard img {
+  width: 130px;
+  height:130px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.pigletcard .view-btn {
+opacity: 0;
+position: absolute;
+bottom: 35%;
+left: 50%;
+transform: translate(-50%, 50%);
+padding: 10px 20px;
+background-color: #f0f0f0;
+border: none;
+
+color: #333;
+visibility: hidden;
+cursor: pointer;
+font-weight: bold;
+transition: opacity 0.3s, transform 0.3s;
+} 
+
+.pigletcard {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.pigletcard:hover {
+  transform: scale(1); /* moves up instead of sideways */
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* adds a shadow on hover */
+}
+
+
+
+/* piglet */
+
+
         .pigcard {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1936,6 +2027,18 @@ select#weight option:checked {
             margin-top:-9.5px;
             height: 300px;
         }
+        .pigcard .row{
+       display: flex;
+          flex-direction: column;
+          align-items: start;
+          margin: 0px;
+          padding:0px;
+    }
+    .pigcard .row p {
+      margin: 3px 0;   
+      font-size: 14px; 
+      font-weight:600 ;
+      line-height: 1.2; }
 
         .pigcard img {
             width: 130px;
@@ -1996,6 +2099,22 @@ select#weight option:checked {
             font-size: 20px;
         }
         
+        h3.weightpigletclass{
+          font-size: 11px;
+          background-color: rgb(20, 150, 15);       
+  margin: 0;
+  color: #ffffff;
+  padding: 3px 0 0 0;
+  border-radius: 1px 1px 200px 200px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%; 
+  height: 8%;
+  text-align: center;
+        }
+
         h3.weightclass{
           font-size: 13px;
           background-color: rgb(20, 150, 15);       

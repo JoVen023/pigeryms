@@ -109,6 +109,7 @@ foreach($results as $result)
         <ul class="nav navbar-nav" id="line">
           <li class="custom-link" ><a href="index.php" class="nav-link" href="#scrollspyHeading1">Home</a></li>
           <li class="custom-link" ><a href="pig-list.php"class="nav-link" href="#scrollspyHeading2">Shop</a>
+          <li class="custom-link dot" ><a href="pigletsforsale.php" class="nav-link"href="#scrollspyHeading3">Piglets<span class=" <?php echo $class; ?>"></span></a></li>
          <li class="custom-link dot" ><a href="cull.php" class="nav-link"href="#scrollspyHeading3">Cull<span class=" <?php echo $class; ?>"></span></a></li>
          <li class="custom-link dot" ><a href="my-order.php" class="nav-link"href="#scrollspyHeading3">My Order<span class=" <?php echo $class; ?>"></span></a></li>
         </ul>

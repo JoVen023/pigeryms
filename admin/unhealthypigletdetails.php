@@ -170,7 +170,7 @@ if(isset($_POST['update'])){
     <i class='bx bx-up-arrow-circle'></i>Add Vaccination Guide
 </button>
 
- <!-- move pig modal -->
+ <!-- guide vaccine pig modal -->
 
  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-lg">
@@ -277,7 +277,7 @@ if ($vaccines) {
         echo '<br>('. htmlentities($vaccineDate->format('Y-m-d')).')<br><i class="bx bxs-chevrons-down"></i></div>';
     }
 } else {
-    echo '<h1 class="text-center text-secondary">Empty Guide</h1>';
+    echo '<h1 class="text-center text-secondary">Empty</h1>';
 }
 
 // Pass the vaccines array, first vaccine date, and total vaccines count to JavaScript

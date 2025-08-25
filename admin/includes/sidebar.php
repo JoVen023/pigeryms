@@ -28,18 +28,27 @@
 					<span class="text">Inventory</span>
 				</a>
 			</li>
-			<li>
-				<a href="orders.php">
-					<i class='bx bxs-store-alt' ></i>
-					<span class="text">Orders</span>
-				</a>
-			</li>
-			<li>
+			<li class="has-submenu">
+	<a href="#" class="submenu-toggle">
+		<i class='bx bxs-store-alt'></i>
+		<span class="text">Orders</span>
+		<i class='bx bx-chevron-down dropdown-icon'></i>
+	</a>
+	<ul class="submenu">
+		<li><a href="orders.php"><i class='bx bxs-doughnut-chart'></i>
+		<span class="text">Pig Orders</span></a></li>
+		<li><a href="cull_orders.php"><i class='bx bxs-doughnut-chart'></i>
+		<span class="text">Cull Orders</span></a></li>
+		<li><a href="piglet_orders.php"><i class='bx bxs-doughnut-chart'></i>
+		<span class="text">Piglet Orders</span></a></li>
+	</ul>
+</li>
+			<!-- <li>
 				<a href="cull_orders.php">
 					<i class='bx bxs-store-alt' ></i>
 					<span class="text">Cull Orders</span>
 				</a>
-			</li>
+			</li> -->
 			<li>
 				<a href="customer.php">
 					<i class='bx bxs-group' ></i>
@@ -91,6 +100,13 @@
 	</section>
 
 	<script>
+		document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+	toggle.addEventListener('click', function (e) {
+		e.preventDefault(); // prevent the # link jump
+		const parent = this.closest('.has-submenu');
+		parent.classList.toggle('open');
+	});
+});
 document.getElementById("logoutlinks").addEventListener("click", function(e) {
     e.preventDefault(); // prevent the default link click action
     var confirmAction = confirm("Are you sure you want to log out?");

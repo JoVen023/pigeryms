@@ -165,6 +165,15 @@ try {
     
     }
 
+    if (isset($_POST['pigletid'])) {
+        $pigletid = $_POST['pigletid']; 
+    
+        $sqlDeletepigs = "DELETE FROM tblpiglet_for_sale_details WHERE id = :pigletid";
+        $stmtDeletepigs = $dbh->prepare($sqlDeletepigs);
+        $stmtDeletepigs->bindParam(':pigletid', $pigletid, PDO::PARAM_INT);
+        $stmtDeletepigs->execute();
+    }
+
    
     if (isset($_POST['sowid'])) {
         $sowId = $_POST['sowid']; 

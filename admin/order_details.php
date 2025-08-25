@@ -74,7 +74,7 @@ if (isset($_POST['orderId'])) {
         $html .= ' <table class="table caption-top">';
         $html .= ' <caption>List of Pigs</caption>';
         $html .= '<thead>';
-        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th><th scope="col">Price</th><th scope="col">Quantity</th><th scope="col">Weight Class</th>';
+        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th><th scope="col">Price</th><th scope="col">Quantity</th><th scope="col">Weight</th>';
         $html .= '</thead>';
         $html .='<tbody>';
         foreach ($results as $result) {
