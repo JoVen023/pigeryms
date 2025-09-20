@@ -44,16 +44,11 @@ if(isset($_POST['add'])){
     if(isset($_POST['amount'])){
       $id = intval($_POST['sow_id']); 
       $total = $_POST['total'];
-  
       try {
-  
-  
   $query1 = $dbh->prepare("UPDATE tblculling SET amount = :amount WHERE id=:id");
   $query1->bindParam(':id', $id, PDO::PARAM_INT);
   $query1->bindParam(':amount', $total, PDO::PARAM_INT);
   $query1->execute();
-
-  
   try {
       $query1->execute();
     
@@ -168,151 +163,151 @@ if(isset($_POST['add'])){
 		<main>
        
 
-			
-<div class="table-data">
-			<div class="order">
-					<div class="heads">
-						<h3>Sow List</h3>
-						<div class="search-container">
-    <div class="input-group">
-        <input type="text" class="form-control" placeholder="Search..." id="searchInput" aria-label="Search">
-        <div class="input-group-append">
-            <span class="input-group-text"><i class='bx bx-search-alt-2'></i></span>
-    </div>
-</div>
-</div>
-						<button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#addModal"
-    class="openModalBtn " ><i class='bx bx-plus-circle' style=""></i> Add New</button>
-					</div>
+        
+  <div class="table-data">
+        <div class="order">
+            <div class="heads">
+              <h3>Sow List</h3>
+              <div class="search-container">
+      <div class="input-group">
+          <input type="text" class="form-control" placeholder="Search..." id="searchInput" aria-label="Search">
+          <div class="input-group-append">
+              <span class="input-group-text"><i class='bx bx-search-alt-2'></i></span>
+      </div>
+  </div>
+  </div>
+              <button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#addModal"
+      class="openModalBtn " ><i class='bx bx-plus-circle' style=""></i> Add New</button>
+            </div>
 
-					<ul class="breeders" id="carList">
-					<?php 
-                          
-                          $sql ="SELECT * FROM tblculling WHERE status = 'Culling'";
-                          $query3 = $dbh->prepare($sql);
-                          $query3->execute();
-                          $results=$query3->fetchAll(PDO::FETCH_OBJ);
-                          foreach($results as $result){
-                          
-                          ?>
-                              
-					<li data-make="<?php echo htmlentities($result->name); ?>" data-model="<?php echo htmlentities($result->status); ?>" data-year="<?php echo htmlentities($result->age); ?>">
-    <div class="card cull">
+            <ul class="breeders" id="carList">
+            <?php 
+                            
+                            $sql ="SELECT * FROM tblculling WHERE status = 'Culling'";
+                            $query3 = $dbh->prepare($sql);
+                            $query3->execute();
+                            $results=$query3->fetchAll(PDO::FETCH_OBJ);
+                            foreach($results as $result){
+                            
+                            ?>
+                                
+            <li data-make="<?php echo htmlentities($result->name); ?>" data-model="<?php echo htmlentities($result->status); ?>" data-year="<?php echo htmlentities($result->age); ?>">
+      <div class="card cull">
 
-        <div class="image-container">
-            <img src="img/<?php echo htmlentities($result->img); ?>" class="card-img-top" alt="...">
+          <div class="image-container">
+              <img src="img/<?php echo htmlentities($result->img); ?>" class="card-img-top" alt="...">
+            
+              <div class="image-overlay"></div> 
+          </div>
+          <div class="card-body cull">
+            <div class="d-flex justify-content-between align-items-center">
+            <div class="flex-grow-1 text-end p-0">
+      <h5 class="card-title ps-4"><?php echo htmlentities($result->name); ?></h5>
+  </div>
+  <button type="button" class="btn btn-sm delete-btn ms-auto p-0" title="Delete Pig"  data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo htmlentities($result->id); ?>"><i class='bx bx-trash bx-sm text-danger'></i></button>
+
+          </button></span></h5> 
+          </div>
+            
+              <div class="flex">
+        <p class="card-text <?php echo htmlentities($result->status); ?>"><?php echo htmlentities($result->status); ?></p>
+        <p class="card-text"><span>Price:</span><br>₱<?php echo htmlentities($result->amount);?></p>
+              <p class="card-text"><span>Age:</span><br><?php echo htmlentities($result->age);?></p>
+              <button type="button" title="Update Amount" data-bs-toggle="modal" data-bs-target="#amountModal-<?php echo $result->id; ?>" class="moveModalBtn mb-1">
+      <i class='bx bx-up-arrow-circle mb-1'></i>Update Amount
+  </button>
+              <button type="button" title="Already Purchased" data-bs-toggle="modal" data-bs-target="#moveModal" class="moveModalBtn">
+      <i class='bx bx-up-arrow-circle'></i>Purchased
+  </button>
+
+          </div>
+
+      </div>
+      </div>
+  </li>
+
+  <!-- amount sow modal -->
+
+  <div class="modal fade" id="amountModal-<?php echo $result->id; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header custom-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Sow Purchased Details</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
           
-            <div class="image-overlay"></div> 
-        </div>
-        <div class="card-body cull">
-          <div class="d-flex justify-content-between align-items-center">
-          <div class="flex-grow-1 text-end p-0">
-    <h5 class="card-title ps-4"><?php echo htmlentities($result->name); ?></h5>
-</div>
-<button type="button" class="btn btn-sm delete-btn ms-auto p-0" title="Delete Pig"  data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo htmlentities($result->id); ?>"><i class='bx bx-trash bx-sm text-danger'></i></button>
-
-        </button></span></h5> 
-        </div>
-           
-            <div class="flex">
-			<p class="card-text <?php echo htmlentities($result->status); ?>"><?php echo htmlentities($result->status); ?></p>
-      <p class="card-text"><span>Price:</span><br>₱<?php echo htmlentities($result->amount);?></p>
-            <p class="card-text"><span>Age:</span><br><?php echo htmlentities($result->age);?></p>
-            <button type="button" title="Update Amount" data-bs-toggle="modal" data-bs-target="#amountModal" class="moveModalBtn mb-1">
-    <i class='bx bx-up-arrow-circle mb-1'></i>Update Amount
-</button>
-            <button type="button" title="Already Purchased" data-bs-toggle="modal" data-bs-target="#moveModal" class="moveModalBtn">
-    <i class='bx bx-up-arrow-circle'></i>Purchased
-</button>
-
-        </div>
-
-		</div>
-    </div>
-</li>
-
-
-<!-- moveculling sow modal -->
-
-<div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-<div class="modal-dialog modal-md">
-    <div class="modal-content">
-      <div class="modal-header custom-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Sow Purchased Details</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        
-      <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-      <div class="row">
-      <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
-  <div class="col">
-  <label for="fullnames">Customer Name</label>
-    <input type="text" id="fullnames" name="custname" class="form-control" placeholder="Fullname" aria-label="name" required>
-  </div>
-</div>
-<br>
-<div class="row">
-        
+        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+        <div class="row">
+        <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
         <div class="col">
-        <label for="orderdate">Date Purchased</label>
-          <input type="date" id="orderdate" name="date" class="form-control" placeholder="Month" aria-label="Month" required>
+                                  <label for="total">Total Amount</label>
+                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
+                  </div>
+  </div>
+  <br>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" name="amount" class="btn btn-primary" id="confirmBtn">Confirm</button>
         </div>
-</div>
-<br>
-
-      <div class="row">
-      <div class="col">
-                                 <label for="total">Total Amount</label>
-  									<input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
-								</div>
-</div>
-
-      <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" name="move" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </form>
       </div>
-      </form>
+    </div>
+                  </div>
+
+          </div>    
+  <!-- amount  cull modal -->
+
+  <!-- moveculling sow modal -->
+
+  <div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header custom-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Sow Purchased Details</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+        <div class="row">
+        <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
+    <div class="col">
+    <label for="fullnames">Customer Name</label>
+      <input type="text" id="fullnames" name="custname" class="form-control" placeholder="Fullname" aria-label="name" required>
     </div>
   </div>
-                </div>
-
-				</div>    
-<!-- move cull modal -->
-
-
-<!-- amount sow modal -->
-
-<div class="modal fade" id="amountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-<div class="modal-dialog modal-md">
-    <div class="modal-content">
-      <div class="modal-header custom-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Sow Purchased Details</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        
-      <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-      <div class="row">
-      <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
-      <div class="col">
-                                 <label for="total">Total Amount</label>
-  									<input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
-								</div>
-</div>
-<br>
-
-      <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" name="amount" class="btn btn-primary" id="confirmBtn">Confirm</button>
-      </div>
-      </form>
-    </div>
+  <br>
+  <div class="row">
+          
+          <div class="col">
+          <label for="orderdate">Date Purchased</label>
+            <input type="date" id="orderdate" name="date" class="form-control" placeholder="Month" aria-label="Month" required>
+          </div>
   </div>
-                </div>
+  <br>
 
-				</div>    
-<!-- amount  cull modal -->
+        <div class="row">
+        <div class="col">
+                                  <label for="total">Total Amount</label>
+                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
+                  </div>
+  </div>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" name="move" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+      </div>
+    </div>
+                  </div>
+
+          </div>    
+  <!-- move cull modal -->
+
+
 
 
 <!-- deletepig  Modal -->

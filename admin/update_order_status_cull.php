@@ -23,7 +23,7 @@ if(isset($_POST['sowIds']) && is_array($_POST['sowIds'])) {
         $date = $_POST['date'];
         $totalPrice = $_POST['totalPrice'];
         // This will hold the weights for each order detail
-        $weights = $_POST['weights'];
+        $weights = 0;
 
             $pigletquer = $dbh->prepare("SELECT pig_id AS piglets_id FROM tblorderdetails WHERE order_id = :orderid ");
              $pigletquer->bindParam(':orderid',$orderId,PDO::PARAM_INT);
@@ -40,10 +40,9 @@ if(isset($_POST['sowIds']) && is_array($_POST['sowIds'])) {
         
 
         // Update order status
-        $sql ="UPDATE tblorders SET orderstatus=:status, total_amount=:totalPrice , deliverydate =:date WHERE id=:orderId";
+        $sql ="UPDATE tblorders SET orderstatus=:status, deliverydate =:date WHERE id=:orderId";
     $query = $dbh -> prepare($sql);
     $query -> bindParam(':status', $status, PDO::PARAM_STR);
-    $query -> bindParam(':totalPrice', $totalPrice, PDO::PARAM_INT);
     $query -> bindParam(':date', $date, PDO::PARAM_STR);
     $query -> bindParam(':orderId', $orderId, PDO::PARAM_STR);
 
@@ -51,37 +50,54 @@ if(isset($_POST['sowIds']) && is_array($_POST['sowIds'])) {
 
         try {
             $query->execute();
+        
+        } catch(PDOException $e) {
+            echo "Query failed: " . $e->getMessage();
+            exit;
+        }
+        $price ="SELECT total_amount FROM tblorders WHERE id=:orderId";
+    $queryprice = $dbh -> prepare($price);
+    $queryprice -> bindParam(':orderId', $orderId, PDO::PARAM_STR);
+        try {
+            $queryprice->execute();
+            $pricerow = $queryprice->fetch(PDO::FETCH_ASSOC);
+            if ($pricerow){
+                $currprice = $pricerow['total_amount'];
+            }else{
+                die("Error Found");
+            }
          
         } catch(PDOException $e) {
             echo "Query failed: " . $e->getMessage();
             exit;
         }
 
-        $sql = "UPDATE tblsales SET total_sales = total_sales + :totalprice"  ;
-        $query1 = $dbh->prepare($sql);
-        $query1->bindParam(':totalprice', $totalPrice, PDO::PARAM_INT);
+
+        $sql4 = "UPDATE tblsales SET total_sales = total_sales + :totalprice WHERE id = 1";
+        $query4 = $dbh->prepare($sql4);
+        $query4->bindParam(':totalprice', $currprice, PDO::PARAM_INT);
         
         try {
-            $query1->execute();
+            $query4->execute();
           
-        } catch(PDOException $e) {
+        } catch(PDOException $e) {  
             echo "Query failed: " . $e->getMessage();
             exit;
         }
     
 
-        // Update the weights for each order detail
-        foreach ($weights as $detailId => $weight) {
-            $sql = "UPDATE tblorderdetails SET weight=:weight WHERE id=:detailId AND order_id=:orderId";
-            $query = $dbh -> prepare($sql);
-            $query -> bindParam(':weight', $weight, PDO::PARAM_STR);
-            $query -> bindParam(':detailId', $detailId, PDO::PARAM_STR);
-            $query -> bindParam(':orderId', $orderId, PDO::PARAM_STR);
-            $query -> execute();
+        // // Update the weights for each order detail
+        // foreach ($weights as $detailId => $weight) {
+        //     $sql = "UPDATE tblorderdetails SET weight=:weight WHERE id=:detailId AND order_id=:orderId";
+        //     $query = $dbh -> prepare($sql);
+        //     $query -> bindParam(':weight', $weight, PDO::PARAM_STR);
+        //     $query -> bindParam(':detailId', $detailId, PDO::PARAM_STR);
+        //     $query -> bindParam(':orderId', $orderId, PDO::PARAM_STR);
+        //     $query -> execute();
 
             
             
-        }
+        // }
 
         echo "Order status updated successfully";
     }

@@ -32,6 +32,7 @@ WHERE (
 $querynotif->execute();
 $notif=$querynotif->fetchall(PDO::FETCH_OBJ);
 
+
 $stmttodo = $dbh->prepare("SELECT *, tblpigbreeders.name
                        FROM tbltodo 
                       LEFT JOIN tblpigbreeders ON tbltodo.sow_id = tblpigbreeders.id
@@ -40,6 +41,17 @@ $stmttodo = $dbh->prepare("SELECT *, tblpigbreeders.name
 $stmttodo->bindParam(':currentDate1', $currentDates, PDO::PARAM_STR);
 $stmttodo->execute();
 $todoo=$stmttodo->fetchall(PDO::FETCH_OBJ);
+
+
+
+$stmttodovaccine = $dbh->prepare("SELECT *,vg.piglet_id as id, p.name
+                       FROM vaccines_guide  vg
+                      LEFT JOIN piglets p ON vg.piglet_id = p.id
+                       WHERE vg.date >= :currentDate1
+                       ORDER BY ABS(DATEDIFF(vg.date, :currentDate1)) ASC");
+$stmttodovaccine->bindParam(':currentDate1', $currentDates, PDO::PARAM_STR);
+$stmttodovaccine->execute();
+$todoovaccine=$stmttodovaccine->fetchall(PDO::FETCH_OBJ);
 
 
 
@@ -99,6 +111,32 @@ foreach ($todoo as $to) {
   }
   $notifContent .= "</a>";
 }
+
+
+
+foreach ($todoovaccine as $tovaccines) {
+  $statustodos = $tovaccines->details;
+  $datetodovaccine = new DateTime($tovaccines->date);
+  $formattedDatetodovaccine = $datetodovaccine->format('F j, Y');
+  $statusDateOnlytodovaccine = $datetodovaccine->format('Y-m-d');
+  
+  $sownametodovaccine = htmlentities($tovaccines->name ?? '');
+  $idtodos = htmlentities($tovaccines->id ?? '');
+  
+  if ($statusDateOnlytodovaccine === $today) {
+      $todayCount++;
+  }
+  $isTodaytodos = ($statusDateOnlytodovaccine === $today);
+  $classtodos = $isTodaytodos ? 'bg-info' : 'bg-none';
+
+  $notifContent .= "<a href='unhealthypigletdetails.php?id={$idtodos}' class='list-group-item list-group-item-action {$classtodos}'>";
+    $notifContent .= "Vaccine  {$statustodos} for <strong>{$sownametodovaccine}</strong> piglet on <em>{$formattedDatetodovaccine}</em>";
+  $notifContent .= "</a>";
+}
+
+
+
+
 
 $notifContent .= "</div>";
 

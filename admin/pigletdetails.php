@@ -221,10 +221,10 @@ if (isset($_POST['update'])) {
         $query1->bindParam(':date', $dateStarted, PDO::PARAM_STR);
 
         $query1->execute();
-        $query = $dbh->prepare("UPDATE piglets SET name=:name, status=:status, img=:pict, gender=:gender WHERE id=:id");
+        $query = $dbh->prepare("UPDATE piglets SET name=:name, status=:status, img=:pict, gender=:gender,posted = 0 WHERE id=:id");
     }
 else {
-        $query = $dbh->prepare("UPDATE piglets SET name=:name, status=:status, img=:pict, gender=:gender WHERE id=:id");
+        $query = $dbh->prepare("UPDATE piglets SET name=:name, status=:status, img=:pict, gender=:gender,posted = 0 WHERE id=:id");
     }
 
     $query->bindParam(':name', $name, PDO::PARAM_STR);
@@ -235,10 +235,17 @@ else {
 
     try {
         $query->execute();
-        echo "<script type='text/javascript'>
-        alert('Updated Successfully'); 
-        window.location.href = 'pigletdetails.php?id=" . $Id . "&group_id=" . $groupid . "';
-    </script>";
+        if($query){
+            $success = "Updated Succesfully" && header("refresh:1; url=pigletdetails.php?id=" . $Id ." &group_id=" . $groupid);
+        }
+            else{
+              $error = "Please try again later";
+            }
+
+    //         echo "<script type='text/javascript'>
+    //     alert('Updated Successfully'); 
+    //     window.location.href = 'pigletdetails.php?id=" . $Id . "&group_id=" . $groupid . "';
+    // </script>";
     } catch (PDOException $ex) {
         echo $ex->getMessage();
         exit;
@@ -354,7 +361,7 @@ if(isset($_POST['addcull'])){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
     <!-- DataTables JS should be loaded after jQuery -->
-
+    <script src="js/swal.js"></script>
 
     </head>
     <body class="<?= $_SESSION['dark_mode'] ? 'dark' : '' ?>">
@@ -374,11 +381,13 @@ if(isset($_POST['addcull'])){
 
             <!-- MAIN -->
             <main>
-
             <div class="head-title">
-                    <div class="left">
+            <a href="growingphasedetails.php?id=<?= urlencode($groupId); ?>" 
+   class="d-inline-block border rounded-2 bg-info text-white px-3 py-2 text-decoration-none">
+   <i class='bx bx-left-arrow-circle'></i> Back
+</a>
+        <div class="left">
                         <h1>Feeding Guide</h1>
-                    
                     </div>
                 </div>
 
@@ -406,17 +415,17 @@ if(isset($_POST['addcull'])){
         <div class="card-body">
         <div class="pigsts">
         <div class="left-section"> 
-            <h2 class="card-title"><?php echo $pig['name']; ?></h2>
+        <button type="button" class="btn btn-primary btn-sm " title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+    <button type="button" class="btn btn-danger btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Cull</button>
+    <button type="button" class="btn btn-success btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button>
         </div>
         <div class="right-section"> 
             <p class="card-text <?php echo $pig['pstatus']; ?>"><?php echo $pig['pstatus']; ?></p>
         <?php if (!empty($qrImagePath)): ?>
-    <a href="print_qr.php?img=<?php echo urlencode($qrImagePath); ?>&name=<?php echo urlencode($pig['name']); ?>"
-       class="btn btn-sm"
-       title="Print QR"
-       target="_blank">
-       <i class='bx bx-qr-scan'></i>
-    </a>
+            <a href="#" class="btn btn-sm" 
+   onclick="window.open('print_qr.php?img=<?php echo urlencode($qrImagePath); ?>&name=<?php echo urlencode($pig['name']); ?>', 'QRPrint', 'width=800,height=600'); return false;">
+    <i class='bx bx-qr-scan'></i>
+</a>
 <?php endif; ?>
  <a href="printpigletdetails.php?id=<?php echo urlencode($pig['id']);?>" class="btn btn-sm" title="Print Piglets Details" target="_blank">
  <i class='bx bx-printer'></i>
@@ -426,6 +435,7 @@ if(isset($_POST['addcull'])){
         
     </div>
     </div>
+    <h2 class="card-title"><?php echo $pig['name']; ?></h2>
                 <p class="card-text"><span>Gender:</span> <?php echo $pig['gender']; ?></p>
                 <p class="card-text"><span>Breed:</span> <?php echo $pig['breed']; ?></p>
                 <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
@@ -455,11 +465,20 @@ if(isset($_POST['addcull'])){
              
     <p class="card-text"><span>Total Feeds Consumption:</span> <?php echo  round($totalFeed / $totalpigs, 2); ?> - <?php echo round($totalFeeds /  $totalpigs,2); ?> Kilograms</p>
 
-                
-    <button type="button" class="btn btn-primary btn-sm " title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
-    <button type="button" class="btn btn-danger btn-sm " title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Culling</button>
-    <button type="button" class="btn btn-success btn-sm " title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button>
+    <!-- CENTERED BUTTONS
+      <div class="row">
+                <div class="col d-flex justify-content-center">
+<button type="button" class="btn btn-primary btn-sm " title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+    <button type="button" class="btn btn-danger btn-sm <?= ($pig['gender'] =="Male") ? 'd-none':''; ?>" title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Culling</button>
+    <button type="button" class="btn btn-success btn-sm <?= ($pig['gender'] =="Male") ? 'd-none':''; ?>" title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button>
+    
+                </div>
+            </div> -->
+    <!-- <button type="button" class="btn btn-primary btn-sm " title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+    <button type="button" class="btn btn-danger btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Culling</button>
+    <button type="button" class="btn btn-success btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button> -->
     <!-- deletepig  Modal -->
+    
     <div class="modal fade" id="deleteModal-<?php echo $pig['id']; ?>" tabindex="-1"  aria-labelledby="cancelModalLabel-<?php echo $pig['id']; ?>" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -556,6 +575,7 @@ if(isset($_POST['addcull'])){
                             <select name="stats" id="status" class="form-select form-select-sm" aria-label="Status">
                                 <option value="Healthy" <?php if ($pig['status'] == 'Healthy') echo 'selected'; ?>>Healthy</option>
                                 <option value="UnHealthy" <?php if ($pig['status'] == 'UnHealthy') echo 'selected'; ?>>UnHealthy</option>
+                                <option value="Posted" <?php if ($pig['status'] == 'Posted') echo 'selected'; ?>>Posted</option>
                             </select>
                         </div>
                     </div>
@@ -736,6 +756,182 @@ if(isset($_POST['addcull'])){
 
 
 
+    
+
+<section class="records">
+<div class="head-title">
+				<div class="left">
+					<h1>Vaccination Records</h1>
+				
+				</div>
+                
+			</div>
+        <div class="table-data">
+				<div class="order">
+                <?php 
+                          $sql = "SELECT * FROM vaccines_shot
+                          WHERE piglets_id = :piglets_id";
+                  
+                  $query3 = $dbh->prepare($sql);
+                  $query3->bindParam(':piglets_id',$pigletsId, PDO::PARAM_INT);
+                  $query3->execute();
+                  $results = $query3->fetchAll(PDO::FETCH_OBJ);
+                  $totalRows = count($results);
+          
+                  ?>
+				<div class="left">
+					<h1>Records Lists</h1>
+                    <!-- <button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#confirmModals" class="openModalBtn">
+  <i class='bx bx-plus-circle'></i> Add New
+</button> -->
+				</div>
+                <table id="myTable">
+						<thead>
+							<tr>
+                                <th  class="text-center">ID</th>
+                                <th  class="text-center">Vaccined By</th>
+                                <th  class="text-center">Vaccined Name</th>
+                                <th  class="text-center">Date Vaccinated</th>
+                                <th  class="text-center" >Action</th>
+                                
+							</tr>
+						</thead>
+                        
+						<tbody>
+                   
+                     
+                  <?php 
+                          foreach($results as $result){
+                            $date = new DateTime($result->date_vaccinated);
+                            $formatteddates = $date->format('F j, Y');
+                        
+                          
+                          ?>
+                              
+                              <tr>
+	<td class="text-center">
+	<p><?php echo htmlentities($result->id); ?></p>
+		</td>
+        <td class="text-center"><?php echo htmlentities($result->vaccined_by); ?></td>
+	<td class="text-center"><?php echo htmlentities($result->vaccine_name); ?></td>
+	<td><?php echo htmlentities($formatteddates); ?></td>
+
+ 
+    <!-- Button trigger modal -->
+    <td class="action text-center">
+    <button type="button" class="btn deleterecord" title="Delete Record" data-bs-toggle="modal" data-bs-target="#deleteModalrecord-<?php echo htmlentities($result->id); ?>" data-id="<?php echo htmlentities($result->id); ?>" data-breeder-id="<?php echo htmlentities($result->breeder_id); ?>"> <i class='bx bx-trash'></i></button>
+    <!-- Button trigger modal -->
+  </tr>
+  
+<!-- deletepig  Modal -->
+<div class="modal fade" id="deleteModalrecord-<?php echo htmlentities($result->id); ?>" tabindex="-1"  aria-labelledby="cancelModalLabel-<?php echo htmlentities($result->id); ?>" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                  
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        
+                    </button>
+                </div>
+                <div class="modal-body">
+                <div class="text-center">
+                    <img src="img/deletepig.svg" alt="Profile Picture" width="150px" height="150px">
+                    <h3 class="confirm">Are you sure you want to delete this Record?</h3>
+                  </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="deleterecord('<?php echo htmlentities($result->id); ?>')" name="deleterecord">Confirm</button>
+                    <input type="hidden" id="breederIdHiddenField" value="<?php echo htmlentities($result->piglets_id); ?>">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- delete record Modal -->
+<!-- update pig Modal -->
+
+<div class="modal fade" id="updateModals" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header custom-header">
+        <h5 class="modal-title" id="exampleModalLabel">Update Pig</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="updateForms" action="breederdetails.php?id=<?php echo $breederId; ?>" method="POST">
+          
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" name="updaterecord" class="btn btn-primary">Update</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>                 
+<!-- update pig Modal -->
+
+
+
+<?php 
+} 
+?>	
+						</tbody>
+					</table>
+
+					<!-- add pig Modal -->
+<div class="modal fade" id="confirmModals" tabindex="-1"  aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabels" aria-hidden="true">
+<div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header custom-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Record</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <form  action="add_vaccine.php?id=<?php echo $pigletId; ?>" method="POST">
+      <div class="col">
+      <div class="row">
+  <!-- <label for="name">Vaccine Name</label>
+    <input type="text" name="vaccine" id="vaccine" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name">
+  
+</div> -->
+  <div class="row">
+  <label for="name">Vaccine Name</label>
+    <input type="text" name="vaccine" id="vaccine" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name">
+  
+</div>
+  <br>
+  <div class="row">
+  <label for="date">Vaccinated Date</label>
+  <input type="date" name="date" id="date" class="form-control"  autocomplete="given-name" required>
+  </div>
+
+</div>
+<br>
+      <div class="modal-footer">
+        <div class="col">
+            <div class="row mb-1">
+            <button type="submit" name="record" class="btn btn-primary" id="confirmBtn">Confirm</button>
+      </div>
+      <div class="row">
+      <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                </div>
+                </div>
+      </div>
+      </form>
+    </div>
+  </div>
+                </div>
+
+				</div>
+        </div>
+
+        	
+        </div>
+        </section>
    
 
             </main>

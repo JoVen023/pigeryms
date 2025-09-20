@@ -19,38 +19,41 @@ if ($_POST['orderId']) {
     try {
         $query->execute();
     } catch(PDOException $e) {
-        echo "Query failed: " . $e->getMessage();
+        echo "Error: " . $e->getMessage();
         exit;
     }
-    $query->execute();
     $results = $query->fetchAll(PDO::FETCH_OBJ);
 
     if ($query->rowCount() > 0) {
-        // Initialize the variable to store the HTML
-        
-
+        $first = $results[0];
+        $piglets=($first->piglet == 1 )?'':'<th scope="col" >Weight Class</th>';
+        $price=($first->piglet == 1 )?'Price':'Price/kg';
         $html = ' <div class="table-responsive">';
         $html .= ' <table class="table caption-top">';
         $html .= ' <caption>List of Pigs</caption>';
         $html .= '<thead>';
-        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th><th scope="col" >Weight Class</th><th scope="col">Price/kg</th><th scope="col">Quantity</th><th scope="col">Weight</th></tr>';
+        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th>'.$piglets.'<th scope="col">'. $price.'</th><th scope="col">Quantity</th><th scope="col">Weight</th></tr>';
         $html .= '</thead>';
         $html .='<tbody>';
         foreach ($results as $result) {
-            // $weightClass = $result['weight_class'];
-            
-            // preg_match_all('/\d+/', $weightClass, $matches);
-            // $minWeight = isset($matches[0][0]) ? (int) $matches[0][0] : 0;
-            // $maxWeight = isset($matches[0][1]) ? (int) $matches[0][1] : 0;
+
+            $piglet=$result->piglet;
+
+            $weightClass = $result->weight_class;
+            preg_match_all('/\d+/', $weightClass, $matches);
+            $minWeight = isset($matches[0][0]) ? (int) $matches[0][0] : 0;
+            $maxWeight = isset($matches[0][1]) ? (int) $matches[0][1] : 0;
 
           
-            $html .= '<tr>';
+            $html .= '<tr>'; 
             $html .= '<td>' . htmlentities($result->id) . '</td>';
             $html .= '<td>' . htmlentities($result->name) . '</td>';
             $html .= '<td>' . htmlentities($result->sex ?? 'Female') . '</td>';
 
             $html .= '<td >' . htmlentities($result->age) . '</td>';
-            $html .= '<td >' . htmlentities($result->weight_class) . '</td>';
+            if($piglet == 0){
+                $html .= '<td >' . htmlentities($result->weight_class) . '</td>';
+            }
             $html .= '<td>';
             $html .= '<input type="number" style="width: 80px;" class="form-control orderPrice" data-detail-id="' . htmlentities($result->id) . '" value="' . htmlentities($result->price) . '" required>';
             $html .= '</td>';
@@ -61,6 +64,8 @@ if ($_POST['orderId']) {
             data-detail-id="' . htmlentities($result->id) . '" 
             data-sow-id="' . htmlentities($result->sow_id) . '" 
             data-price="' . htmlentities($result->price) . '" 
+             data-min="' . htmlentities($minWeight) . '" 
+              data-max ="' . htmlentities($maxWeight) . '" 
            value="' . htmlentities($result->weight_class) . '"
             placeholder="Weight" required>';
             $html .= '<div class="text-danger weight-error" style="display:none; font-size: 0.9em;"></div>';

@@ -173,7 +173,7 @@ $regusers=$query1->rowCount();
 				
 				<?php 
 
-$sql = "SELECT (sum(total_amount) + (SELECT sum(totalamount) FROM tblsoworder)) as total_sales 
+$sql = "SELECT COALESCE(SUM(total_amount),0) + COALESCE((SELECT sum(totalamount) FROM tblsoworder),0) as total_sales 
         FROM tblorders 
         WHERE orderstatus = 'Completed'";
 
@@ -186,7 +186,7 @@ $result = $query2->fetch(PDO::FETCH_ASSOC);
 				<li>
 					<i class='bx bxs-dollar-circle' ></i>
 					<span class="text">
-						<h3><span>&#8369;</span><?php echo number_format($result['total_sales'], 2);?></h3>
+						<h3><span>&#8369;</span><?php echo number_format(($result['total_sales'] ?? 0), 2);?></h3>
 						<p>Total Sales</p>
 					</span>
 				</li>

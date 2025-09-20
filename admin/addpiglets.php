@@ -35,8 +35,11 @@ if (isset($_POST['add'])) {
         $query->execute();
         $piglet_id = $dbh->lastInsertId();
 
-
-       qr_piglets($piglet_id,$dbh,$host);
+        try {
+            qr_piglets($piglet_id, $dbh, $host);
+        } catch (Exception $e) {
+            echo "<p style='color:red;'>❌ QR code generation failed: " . htmlspecialchars($e->getMessage()) . "</p>";
+        }
 
 
         if ($status == 'UnHealthy') {

@@ -328,14 +328,18 @@ echo '</script>';
         	<?php 
    echo '<p class="card-text"><span>Gender:</span> ' . htmlentities($pig['gender']) . '</p>';
         echo '<p class="card-text"><span>Detailst:</span> ' .  htmlentities($pig['details']) . '</p>';
-        echo '<p class="card-text"><span>Date Started:</span> ' . htmlentities($formatteddate) . '</p>';
-        echo  '<br><button type="button" class="btn btn-sm breedingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-' . htmlentities($pig['id']) .'" data-pigid="' . htmlentities($pig['id']) .'">Move To Healthy</button>';
+        echo '<p class="card-text"><span>Date Started:</span> ' . htmlentities($formatteddate) .'</p>';
+        echo  '<br>';
     
 ?>
-
-
+<div class="row">
+    <div class="col">
+    <button type="button" class="btn btn-sm breedingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>">Move To Healthy</button>
+    </div>
+    <div class="col">
 <button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" >Update</button>
-
+    </div>
+</div>
 <!-- move to culling  Modal -->
 <div class="modal fade" id="cullingModal-<?php echo $pig['id']; ?>" tabindex="-1"  aria-labelledby="cullingModalLabel-<?php echo $pig['id']; ?>" aria-hidden="true">
         <div class="modal-dialog">
@@ -448,9 +452,10 @@ echo '</script>';
 						<thead>
 							<tr>
                                 <th  class="text-center">ID</th>
-								<th  class="text-center">Vaccine Name</th>
+                                <th  class="text-center">Vaccined By</th>
+                                <th  class="text-center">Vaccined Name</th>
                                 <th  class="text-center">Date Vaccinated</th>
-                                <th  class="text-center"    >Action</th>
+                                <th  class="text-center" >Action</th>
                                 
 							</tr>
 						</thead>
@@ -467,20 +472,17 @@ echo '</script>';
                           ?>
                               
                               <tr>
-	<td>
+	<td class="text-center">
 	<p><?php echo htmlentities($result->id); ?></p>
 		</td>
-
-	<td><?php echo htmlentities($result->vaccine_name); ?></td>
+        <td class="text-center"><?php echo htmlentities($result->vaccined_by); ?></td>
+	<td class="text-center"><?php echo htmlentities($result->vaccine_name); ?></td>
 	<td><?php echo htmlentities($formatteddates); ?></td>
 
  
     <!-- Button trigger modal -->
-    <td class="action">
+    <td class="action text-center">
     <button type="button" class="btn deleterecord" title="Delete Record" data-bs-toggle="modal" data-bs-target="#deleteModalrecord-<?php echo htmlentities($result->id); ?>" data-id="<?php echo htmlentities($result->id); ?>" data-breeder-id="<?php echo htmlentities($result->breeder_id); ?>"> <i class='bx bx-trash'></i></button>
-
-
-                          </td>
     <!-- Button trigger modal -->
   </tr>
   
@@ -554,7 +556,11 @@ echo '</script>';
       <div class="modal-body">
       <form  action="add_vaccine.php?id=<?php echo $pigletId; ?>" method="POST">
       <div class="col">
-        
+      <div class="row">
+  <!-- <label for="name">Vaccine Name</label>
+    <input type="text" name="vaccine" id="vaccine" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name">
+  
+</div> -->
   <div class="row">
   <label for="name">Vaccine Name</label>
     <input type="text" name="vaccine" id="vaccine" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name">

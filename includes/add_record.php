@@ -3,13 +3,15 @@ error_reporting(1);
 include('config.php');
     if(isset($_POST['record'])){
         $id = $_POST['id'];
-        $vaccine = $_POST['vaccine'];
+        $by = $_POST['by'];
         $date = $_POST['date'];
+        $vaccine = $_POST['vaccine'];
         
-        $query = $dbh->prepare("INSERT INTO vaccines_shot (piglets_id, vaccine_name,date_vaccinated) VALUES (:piglets_id,  :vaccine_name, :date_vaccinated)");
+        $query = $dbh->prepare("INSERT INTO vaccines_shot (piglets_id,vaccined_by, vaccine_name,date_vaccinated) VALUES (:piglets_id,:vaccined_by,  :vaccine_name, :date_vaccinated)");
     
         // Bind the parameters
         $query->bindParam(':piglets_id', $id, PDO::PARAM_STR);
+        $query->bindParam(':vaccined_by', $by, PDO::PARAM_STR);
         $query->bindParam(':vaccine_name', $vaccine, PDO::PARAM_STR);
         $query->bindParam(':date_vaccinated', $date, PDO::PARAM_STR);
     

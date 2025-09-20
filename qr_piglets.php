@@ -1,6 +1,6 @@
 <?php
 include('includes/config.php');
-
+// echo password_hash('ADMIN', PASSWORD_DEFAULT);
     if (isset($_GET['id']) ) {
         $pigletsId = intval($_GET['id']);
     } else {
@@ -332,8 +332,8 @@ $age = $daysDifference;
                   ?>
 				<div class="left">
 					<h1>Records Lists</h1>
-                    <button type="button" title="Click to Add" data-bs-toggle="modal" data-bs-target="#confirmModals" class="openModalBtn">
-  <i class='bx bx-plus-circle'></i> Add New
+                    <button type="button" class="openModalBtn" id="openEdit">
+  <i class='bx bx-plus-circle' ></i> Add New
 </button>
 				</div>
                 <table id="myTable">
@@ -435,8 +435,23 @@ $age = $daysDifference;
 						</tbody>
 					</table>
 
+                    <!-- Password Modal -->
+<div class="modal" id="passwordModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5>Staff Login</h5></div>
+      <div class="modal-body">
+        <input type="password" id="staffPass" class="form-control" placeholder="Enter password">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="checkPass">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 					<!-- add pig Modal -->
-<div class="modal fade" id="confirmModals" tabindex="-1"  aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabels" aria-hidden="true">
+<div class="modal fade" id="editModal" tabindex="-1"  aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabels" aria-hidden="true">
 <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-header custom-header">
@@ -444,9 +459,14 @@ $age = $daysDifference;
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-      <form  action="includes/add_record.php" method="POST">
+      <form  action="includes/add_record.php" method="POST" id="editForm">
       <div class="col">
-        
+      <div class="row">
+  <label for="by">Vaccined By</label>
+    <input type="text" name="by" id="by" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name" required>
+  
+</div>
+<br>
   <div class="row">
   <label for="name">Vaccine Name</label>
     <input type="text" name="vaccine" id="vaccine" class="form-control" placeholder="Vaccine Name" aria-label="vaccine" autocomplete="given-name">
@@ -486,6 +506,37 @@ $age = $daysDifference;
             </main>
         </section>
  <script>
+
+$('#openEdit').on('click', function () {
+  $('#passwordModal').modal('show');
+});
+
+$('#checkPass').on('click', function () {
+  $.post('auth_staff.php', { password: $('#staffPass').val() }, function (resp) {
+    // let res = JSON.parse(resp);
+    if (resp.success) {
+      $('#passwordModal').modal('hide');
+      $('#editModal').modal('show');
+    } else {
+      alert(resp.message);
+    }
+  });
+});
+
+// $('#editForm').on('submit', function (e) {
+//   e.preventDefault();
+//   $.post('.php', $(this).serialize(), function (resp) {
+//     if (resp === 'ok') {
+//       alert('Saved!');
+//       location.reload();
+//     } else {
+//       alert('Error: ' + resp);
+//     }
+//   });
+// });
+
+
+
     var deletePigId;
 var breederId;
 
@@ -499,6 +550,7 @@ $(document).on('click', '.deleterecord', function() {
 $(document).on('click', '#confirmDelete', function() {
     deleterecord(deletePigId);
 });
+
 
 function deleterecord(id) {
     // Send a POST request to delete.php

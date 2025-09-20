@@ -9,11 +9,24 @@ if (!isset($_SESSION['customer'])) {
 $customerId = $_SESSION['customer'];
 $pigId = $_GET['id'];
 
-$query = "SELECT tfs.*,tfsd.*,tfs.id AS id, tg.img AS group_image,tg.sow_id AS sow_id, sum(tfsd.price) AS price,count(tfsd.id) AS total_piglets 
-FROM tblpiglet_for_sale tfs 
-INNER JOIN tblpiglet_for_sale_details tfsd ON tfs.id = tfsd.tblpiglet_for_sale_id
-LEFT JOIN tblgrowingphase tg ON tg.id =tfs.growingphase_id 
-WHERE tfs.id =:pigId";
+$query = "SELECT 
+    tg.id AS sow_id,
+    tg.sowname AS name,
+    tg.weaneddate AS farrowed_Date,
+    tg.img AS group_image,
+    SUM(tfsd.price) AS price,
+    COUNT(tfsd.id) AS total_piglets,
+    CASE 
+        WHEN COUNT(tfsd.id) = 0 THEN 'SOLD OUT'
+        ELSE 'AVAILABLE'
+    END AS status
+FROM tblgrowingphase tg
+LEFT JOIN piglets p ON p.growinphase_id = tg.id
+LEFT JOIN tblpiglet_for_sale_details tfsd ON tfsd.piglet_id = p.id AND tfsd.status = 'AVAILABLE'
+WHERE tg.id =:pigId
+GROUP BY tg.id
+
+";
 $stmt = $dbh->prepare($query);
 $stmt->bindParam(':pigId', $pigId, PDO::PARAM_INT);
 $stmt->execute();
@@ -37,8 +50,11 @@ $age = $daysDifference;
 $sow_id = $pig['sow_id'];
 
 if ($pig) {
-    $piglet_id = $pig['id'];
-    $query = "SELECT * FROM tblpiglet_for_sale_details WHERE tblpiglet_for_sale_id = :piglet_id AND status = 'AVAILABLE'";
+    $piglet_id = $pig['sow_id'];
+    $query = "SELECT tfsd.* FROM tblpiglet_for_sale_details tfsd
+LEFT JOIN piglets p ON   tfsd.piglet_id = p.id
+LEFT JOIN tblgrowingphase tg ON  tg.id = p.growinphase_id
+ WHERE tg.id= :piglet_id";
     $stmt = $dbh->prepare($query);
     $stmt->bindParam(':piglet_id', $piglet_id, PDO::PARAM_STR);
     $stmt->execute();
@@ -146,7 +162,7 @@ $order_id = $dbh->lastInsertId();
     <div class="carousel-inner" role="listbox">
         <!-- The main image (default view) -->
         <div class="item active">
-            <img src="admin/img/img_piglets_for_sale/<?php echo $pig['img']; ?>" width="200" height="200" alt="<?php echo $pig['name']; ?>">
+            <img src="admin/img/img_piglets_for_sale/<?php echo $pig['group_image']; ?>" width="200" height="200" alt="<?php echo $pig['name']; ?>">
         </div>
     </div>
 </div>
@@ -154,8 +170,8 @@ $order_id = $dbh->lastInsertId();
 
   <div class="text-columns">
   <h1><?php echo $pig['name']; ?> </h1>
-                        <p>Age: <?php echo $age; ?></p>
-                        <p>Weaned Date: <?php echo $formattedDate ; ?></p>
+                        <p>Age: <em> <?php echo $age; ?> Days</em></p>
+                        <p>Weaned Date:<em> <?php echo $formattedDate ; ?></em></p>
     <form action="cart.php" method="post">
                         <p>Quantity<p>
     <div class="quantity-input">
@@ -183,7 +199,6 @@ $order_id = $dbh->lastInsertId();
         </div>
         <div class="modal-body">
 
-          <!-- ✅ Your original Mode of Payment code -->
           <h6>Type Of Payment: <select name="mop" id="statusSelect" class="form-control" style="width:15rem;" required> </select> </h6>
 
           <br>
@@ -202,7 +217,7 @@ $order_id = $dbh->lastInsertId();
               <tr>
               <td id="modalPigNameTd"></td>
               <td id="modalPigGenderTd"></td>
-                <td><span>&#8369;</span><span id="modalPigPrice"></span>/kg</td>
+                <td><span id="modalPigPrice"></span></td>
                 <td><p style="color:black;">1</p></td>
                 <td id="modalPigWeight"></td>
               </tr>
@@ -255,14 +270,16 @@ $order_id = $dbh->lastInsertId();
         <ul class="piglets" id="pigsList">
         <?php foreach ($similarPigs as $similarPig): ?>
     <li class="pigletcard">
+      
         <h3 class="weightclass"><?php echo $similarPig['piglet_weight']; ?> kg</h3>
         <img src="admin/img/<?php echo $similarPig['img']; ?>" alt="<?php echo $similarPig['name']; ?>">
+        <p class="name"><?php echo $similarPig['name']; ?></p>
         <p class="name"><?php echo $similarPig['gender']; ?></p>
         <p class="price">&#8369;<?php echo $similarPig['price']; ?></p>
         <!-- <button type="submit" class="add-to-cart-btn">Add to Cart</button> -->
         <button 
         type="button" 
-    class="order-btn" 
+    class="<?=($similarPig['status'] == "ordered") ? 'order-btn-sold':'order-btn' ; ?>" 
     data-toggle="modal" 
     data-target="#confirmModal"
     data-id="<?= $similarPig['id']; ?>"
@@ -273,8 +290,8 @@ $order_id = $dbh->lastInsertId();
     data-sow_id="<?= $sow_id; ?>"
     data-weight="<?= $similarPig['piglet_weight']; ?>"
     data-img="admin/img/<?= $similarPig['img']; ?>"
-        >
-            Order
+    <?=($similarPig['status'] == "ordered") ? 'disabled':''; ?>>
+        <?=($similarPig['status'] == "ordered") ? 'Sold':'Order' ;?>
         </button>
     </li>
 <?php endforeach; ?>

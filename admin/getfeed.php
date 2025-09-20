@@ -1,12 +1,9 @@
 <?php
 include('includes/config.php');
+header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors', 0);
 
-if (strlen($_SESSION['alogin']) == 0) {
-    header('location:index.php');
-    exit; // It's important to stop further script execution
-} 
-
-header('Content-Type: application/json');
+$response = null;
 
 if (isset($_POST['feedId'])) {
     $feedId = $_POST['feedId'];
@@ -14,54 +11,58 @@ if (isset($_POST['feedId'])) {
     $query = $dbh->prepare($sql);
     $query->bindParam(':feedId', $feedId, PDO::PARAM_STR);
     $query->execute();
-
     $result = $query->fetch(PDO::FETCH_OBJ);
 
     if ($result) {
-        // Create an associative array with the feed data
-        $feedData = array(
+        $response = [
             "id" => $result->id,
             "name" => $result->feedsname,
             "quantity" => $result->quantity,
             "price" => $result->price,
             "date" => $result->datepurchased,
             "consumedate" => $result->consumedate
-        );
-        echo json_encode($feedData);
+        ];
     } else {
-        echo json_encode(array("error" => "No feed found with id $feedId"));
+        $response = ["error" => "No feed found with id $feedId"];
     }
-} else {
-    echo json_encode(array("error" => "No feedId provided"));
 }
+elseif (isset($_GET['piglet_id'])) {
+    $piglet_id = intval($_GET['piglet_id']);
+    $query = "SELECT id, gender FROM piglets WHERE id = :id";
+    $stmt = $dbh->prepare($query);
+    $stmt->bindParam(':id', $piglet_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $piglet = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-// In getfeed.php
-if (isset($_POST['feedIds'])) {
-    $feedId = $_POST['feedIds'];  // Correct variable name
+    if ($piglet) {
+        $response = $piglet;
+    } else {
+        $response = ["error" => "No piglet found with this ID: $piglet_id"];
+    }
+}
+elseif (isset($_POST['feedIds'])) {
+    $feedId = $_POST['feedIds'];
     $sql = "SELECT * FROM breeder_records WHERE id = :feedId";
     $query = $dbh->prepare($sql);
-    $query->bindParam(':feedId', $feedId, PDO::PARAM_STR);  // Correct parameter name
+    $query->bindParam(':feedId', $feedId, PDO::PARAM_STR);
     $query->execute();
-
     $result = $query->fetch(PDO::FETCH_OBJ);
 
     if ($result) {
-        // Create an associative array with the feed data
-        $feedData = array(
+        $response = [
             "id" => $result->id,
             "date_farrowed" => $result->date_farrowed,
             "weaned_date" => $result->weaned_date,
             "total_piglets" => $result->total_piglets,
             "survived" => $result->survived
-        );
-        echo json_encode($feedData);  // Correct variable name
+        ];
     } else {
-        echo json_encode(array("error" => "No record found with id $feedId"));
+        $response = ["error" => "No record found with id $feedId"];
     }
-} else {
-    echo json_encode(array("error" => "No feedId provided"));
+}
+else {
+    $response = ["error" => "No valid parameter provided"];
 }
 
-
-?>
+echo json_encode($response);
+exit;

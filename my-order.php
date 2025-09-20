@@ -58,60 +58,47 @@
                 $stmtDeleteOrder->bindParam(':orderId', $orderId, PDO::PARAM_INT);
                 $stmtDeleteOrder->execute();
     
-                // Use prepared statements for deleting rows from the "tblorderdetails" table
                 $sqlDeleteOrderDetails = "DELETE FROM tblorderdetails WHERE order_id = :orderId";
                 $stmtDeleteOrderDetails = $dbh->prepare($sqlDeleteOrderDetails);
                 $stmtDeleteOrderDetails->bindParam(':orderId', $orderId, PDO::PARAM_INT);
                 $stmtDeleteOrderDetails->execute();
     
-                // Redirect to the same page to update the display after cancellation
                 header('Location: ' . $_SERVER['PHP_SELF']);
                 exit;
             } catch (PDOException $e) {
-                // Handle the exception if something goes wrong with the database operation
                 die("Error: Unable to cancel order");
             }
         } else {
-            die("Unauthorized access"); // If the order doesn't belong to the logged-in customer
+            die("Unauthorized access"); 
         }
     }
         
-        // Fetch data from the "orders" table
         $useremail = $_SESSION['customer'];
         $sql = "SELECT  * FROM tblorders
                 WHERE cust_id=:useremail";
         $stmt = $dbh->prepare($sql);
         $stmt->bindParam(':useremail', $useremail, PDO::PARAM_STR);
         $stmt->execute();
-        $ordersWithDetails = array(); // Array to hold combined data from both tables
+        $ordersWithDetails = array(); 
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $orderId = $row['id'];
 
-            // Fetch data from the "order_details" table using the order ID
             $sqlOrderDetails = "SELECT * FROM tblorderdetails WHERE order_id = :orderId";
             $stmtOrderDetails = $dbh->prepare($sqlOrderDetails);
             $stmtOrderDetails->bindParam(':orderId', $orderId, PDO::PARAM_INT);
             $stmtOrderDetails->execute();
 
-            // Create an array to hold order details for each order
             $orderDetails = array();
             while ($rowOrderDetails = $stmtOrderDetails->fetch(PDO::FETCH_ASSOC)) {
                 $orderDetails[] = $rowOrderDetails;
             }
 
-            // Combine the order data and its details into a single array
             $row['order_details'] = $orderDetails;
 
-            // Add the combined array to the main array
             $ordersWithDetails[] = $row;
         }
 
-        // Now $ordersWithDetails will contain the combined data from both tables
-        // You can loop through it to display the data as needed.
-
-
-    // The rest of your HTML code remains the same
     
 
 
@@ -177,19 +164,17 @@
             <?php include('includes/sidebar.php');?>
         <div class="col-md-6 col-sm-8">
         <div class="profile_wrap">
-        <!-- Loop through orders and display the order info and its details -->
         <?php foreach ($ordersWithDetails as $order) {
              $statusClass = '';
              if ($order['orderstatus'] == 'Completed') {
                  $statusClass = 'Completed';
              }
-            $dateFromDb = $order['orderdate']; // This is the date from the database
-            $timestamp = strtotime($dateFromDb); // Convert the date into a Unix timestamp
-            $formattedDate = date("F j, Y g:i a", $timestamp); // Format the date
+            $dateFromDb = $order['orderdate']; 
+            $timestamp = strtotime($dateFromDb); 
+            $formattedDate = date("F j, Y g:i a", $timestamp); 
             
             $cancelationTime = strtotime($order['canceltime']);
-            // Convert the date into a Unix timestamp
-            $formattedDates = date("F j, Y g:i a", $cancelationTime); // Format the date
+            $formattedDates = date("F j, Y g:i a", $cancelationTime);
             $currentTime = time();
 
             
@@ -217,7 +202,14 @@
                         <thead class="orders">
                             <tr class="<?php echo $order['orderstatus']; ?>">
                                 <th>Pig Name</th>
-                                <th>Weight Class</th>
+                                <?php
+                                if($order['piglets'] == 1) {
+                                   echo '<th>Piglet Weight</th>';
+                                }
+                                elseif($order['cull'] == 1){
+                                }else{
+                                    echo '<th>Weight Class</th>';
+                                }?>
                                 <th>Price</th>
                                 <th>Age</th>
                                 <th>Sex</th>
@@ -226,11 +218,23 @@
                         </thead>
                         <tbody>
                             <!-- Loop through order details for this order -->
-                            <?php foreach ($order['order_details'] as $orderDetail) { ?>
+                            <?php foreach ($order['order_details'] as $orderDetail) { 
+                                $cull = $orderDetail['cull']
+                                ?>
                                 <tr>
                                     <td><?php echo $orderDetail['name']; ?></td>
-                                    <td><?php echo $orderDetail['weight_class']; ?></td>
-                                    <td><?php echo $orderDetail['price'];?>/kg</td>
+                                   <?php echo ($cull == 1)? '': '<td>'.htmlspecialchars($orderDetail['weight_class']).'</td>'; ?>
+                                    <td>₱<?php echo number_format($orderDetail['price'],2)?>
+                                    <?php
+                                     if($orderDetail['piglet'] == 1 || $orderDetail['cull'] == 1) {
+                                        echo '';
+                                     }
+                                     else{
+                                         echo '/kg';
+                                     }
+                                     ?>
+                                    
+                                </td>
                                     <td><?php echo $orderDetail['age']; ?></td>
                                     <td><?php echo $orderDetail['sex']; ?></td>
                                     <td><?php echo $orderDetail['quantity']; ?></td>

@@ -1,6 +1,7 @@
 <?php
 error_reporting(0);
 include('includes/config.php');
+include 'fetchsow.php';
 if(strlen($_SESSION['alogin'])==0)
 	{	
 		
@@ -14,13 +15,20 @@ else{
             // Handle error or redirect to another page
             die('ID not provided.');
         }
-
+        $piglet = getPiglet($dbh,$pigletsId);
 
     $queryDates = "SELECT weaneddate, piggybloom, prestarter, starter, grower, finisher FROM tblgrowingphase  WHERE id = :pigId";
 $stmtDates = $dbh->prepare($queryDates);
 $stmtDates->bindParam(':pigId', $pigletsId, PDO::PARAM_INT);
 $stmtDates->execute();
 $pigDates = $stmtDates->fetch(PDO::FETCH_ASSOC);
+
+if (!$pigDates) {
+    $_SESSION['error'] = "No growing phase data found for this piglet.";
+    header("Location: piggrowingphase.php");
+    exit;
+}
+
 
 $currentDate = new DateTime();
 // Format both dates for comparison
@@ -59,7 +67,10 @@ if (isset($stat)) {
 }
 
 // Retrieve the pig details from the database using the $pigId
-$query = "SELECT tg.*,(tg.pigs - (SELECT COUNT(*) FROM piglets p2 WHERE p2.growinphase_id =  tg.id AND p2.status != 'Sold')) AS addedpig 
+$query = "SELECT tg.*,
+COUNT(CASE WHEN p.gender = 'Female' THEN 1 END) AS totaladded_female,
+COUNT(CASE WHEN p.gender = 'Male' THEN 1 END) AS totaladded_male,
+(tg.pigs - (SELECT COUNT(*) FROM piglets p2 WHERE p2.growinphase_id =  tg.id AND p2.status != 'Sold')) AS addedpig 
 FROM tblgrowingphase tg LEFT JOIN 
 piglets p ON tg.id = p.growinphase_id  WHERE tg.id = :pigId  GROUP BY tg.id";
 $stmt = $dbh->prepare($query);
@@ -67,6 +78,10 @@ $stmt->bindParam(':pigId', $pigletsId, PDO::PARAM_INT);
 $stmt->execute();
 $pig = $stmt->fetch(PDO::FETCH_ASSOC);
 
+
+
+$male_remaining = $pig['male'] - ($pig['totaladded_male'] ?? 0);
+$female_remaining =$pig['female'] -  ($pig['totaladded_female '] ?? 0);
 
 $totaladdedpiglets = empty($pig['addedpig']) ? 'disabled' : '';
 
@@ -168,7 +183,9 @@ if(isset($_POST['update'])){
     $currentData = $fetchQuery->fetch(PDO::FETCH_OBJ);
     $currentstatus = $currentData->status;
     
-    if ($currentstatus != $stat) {  // If the weaned date has changed
+    if ($currentstatus != $stat) { 
+        $currentDate = new DateTime();
+        // If the weaned date has changed
         if ($stat == 'PiggyBloom') {
     $currentDate->add(new DateInterval('P31D')); // Add 32 day
     $thirtyoneDayAfter = $currentDate->format('Y-m-d');
@@ -182,7 +199,8 @@ if(isset($_POST['update'])){
     $finisherDayAfter = $currentDate->format('Y-m-d');
     $status='PiggyBloom';
 
-        } elseif ($stat == 'Pre-Starter') {
+        }
+       elseif ($stat == 'Pre-Starter') {
             $currentDate->add(new DateInterval('P20D')); // Add 20 day
             $fiftyoneDayAfter = $currentDate->format('Y-m-d');
             $currentDate->add(new DateInterval('P30D')); // Add 30 day
@@ -206,12 +224,21 @@ if(isset($_POST['update'])){
             $currentDate->add(new DateInterval('P15D')); // Add 15 day
             $finisherDayAfter = $currentDate->format('Y-m-d');
             $status='Grower';
+            
+        } 
+        elseif ($stat == 'Sold'){
+            $thirtyoneDayAfter = $currentData->piggybloom;
+            $fiftyoneDayAfter  = $currentData->prestarter;
+            $eightyoneDayAfter = $currentData->starter;
+            $growerDayAfter    = $currentData->grower;
+            $finisherDayAfter  = $currentData->finisher;
+            $status='Sold';
         } elseif ($stat == 'Finisher') {
             $currentDate->add(new DateInterval('P15D')); // Add 15 day
             $finisherDayAfter = $currentDate->format('Y-m-d');
-            $status='Finisher';
-        } else {
-            $status = $stat;
+                $status='Finisher';
+        }else{
+            $status==$stat;
         }
     } else {
     $thirtyoneDayAfter = $piggybloom->format('Y-m-d');
@@ -261,8 +288,22 @@ if(isset($_POST['update'])){
 
     // Execute the query
     try {
+      
         $query->execute();
-        echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'growingphasedetails.php?id=" . $Id . "';</script>";
+      
+
+        if ($query) {
+            
+        $success = "Updated Successfully" && header("refresh:1;url=growingphasedetails.php?id=" . $Id);
+    
+        // $success = "Updated Successfully";
+            // header("Refresh: 1; url=growingphasedetails.php?id=" . $Id);
+            // exit; 
+        } else {
+            $error = "Please try again later";
+        }
+
+//   echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'growingphasedetails.php?id=" . $Id . "';</script>";
 
     } catch (PDOException $ex) {
         echo $ex->getMessage();
@@ -308,8 +349,11 @@ if (isset($_POST['sellpiglets'])) {
     
     try {
         $stmtinsertpigletdetails = $dbh->prepare("INSERT INTO tblpiglet_for_sale_details
-        (tblpiglet_for_sale_id, price, piglet_weight, gender, img, status, created)
-        VALUES (:tblpiglet_for_sale_id, :price, :weight, :gender, :img, 'AVAILABLE', CURDATE())");
+        (tblpiglet_for_sale_id,name,piglet_id, price, piglet_weight, gender, img, status, created)
+        VALUES (:tblpiglet_for_sale_id,:name,:piglet_id, :price, :weight, :gender, :img, 'AVAILABLE', CURDATE())");
+
+
+$stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE id = :piglet_id");
     
 
         foreach ($piglet_prices as $i => $pigletdetails_added) {
@@ -323,10 +367,16 @@ if (isset($_POST['sellpiglets'])) {
                 if (move_uploaded_file($tmpName, $targetFile)) {
                     $stmtinsertpigletdetails->execute([
                         ':tblpiglet_for_sale_id' => $lasttblpiglet_for_sale_id,
+                        ':name'  => $pigletdetails_added['name'],
+                        ':piglet_id'  => $pigletdetails_added['piglet_id'],
                         ':price'  => $pigletdetails_added['price'],
                         ':weight' => $pigletdetails_added['weight'],
                         ':gender'  => $pigletdetails_added['pigletgender'],
                         ':img'    => $fileName
+                    ]);
+
+                    $stmtupdatetpigletdetails->execute([
+                        ':piglet_id' => $pigletdetails_added['piglet_id']
                     ]);
                 }
             }
@@ -365,7 +415,7 @@ if (isset($_POST['sellpiglets'])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
     <!-- DataTables JS should be loaded after jQuery -->
-
+    <script src="js/swal.js"></script>  
 
     </head>
     <body class="<?= $_SESSION['dark_mode'] ? 'dark' : '' ?>">
@@ -416,15 +466,37 @@ if (isset($_POST['sellpiglets'])) {
         <div class="col-md-8">
         <div class="card-body">
         <div class="pigsts">
-        <div class="left-section"> <!-- A container to group the title and the status text -->
-            <h2 class="card-title"><?php echo $pig['sowname']; ?></h2>
+            
+        <div class="left-section"> 
+
+    <button type="button" class="btn btn-md btn-primary me-2 " 
+            title="Update Pig" data-bs-toggle="modal" 
+            data-bs-target="#confirmModal" 
+            data-pigid="<?php echo $pig['id']; ?>">
+      Update
+    </button>
+
+    <button type="button" 
+            class="btn btn-md btn-danger  <?= ($stat == "PiggyBloom") ? '' : 'd-none' ?>" 
+            title="Sell Piglets" data-bs-toggle="modal" 
+            data-bs-target="#sellModal" 
+            data-pigid="<?php echo $pig['id']; ?>" 
+            data-totalpiglets="<?php echo $pig['pigs']; ?>">
+      Sell Piglets
+    </button>
+
+
+            
         </div>
         <div class="right-section"> <!-- A container for the trash icon -->
         <p class="card-text <?php echo $stats?>"> <?php echo $stats ?></p>
         <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" ><i class='bx bx-trash'></i></button><span></span>
         </div>
     </div>
+    <h2 class="card-title"><?php echo $pig['sowname']; ?></h2>
                 <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
+                <p class="card-text"><span>Male:</span> <?php echo $pig['male']; ?> </p>
+                <p class="card-text"><span>Female:</span> <?php echo $pig['female']; ?> </p>
                 <p class="card-text"><span>Total Pigs:</span> <?php echo $pig['pigs']; ?></p>
                 <p class="card-text"><span>Mortality:</span> <?php echo $pig['mortality']; ?></p>
                 
@@ -446,16 +518,16 @@ if (isset($_POST['sellpiglets'])) {
             echo "Completed:</span> $finisherdate";
         }
         else{
-            echo 'end';
+            echo $pig['status'];
         }
         
     ?></p>
     <p class="card-text"><span>Total Feeds Consumption:</span> <?php echo $totalFeed ?> - <?php echo $totalFeeds ?> Kilograms</p>
+    <br>
 
-                
-    <button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
-    <button type="button" class="btn btn-sm sellModalBtn <?= ($stat == "PiggyBloom") ? '': 'd-none'  ?>" title="Sell Piglets" data-bs-toggle="modal" data-bs-target="#sellModal" data-pigid="<?php echo $pig['id']; ?>" data-totalpiglets="<?php echo $pig['pigs']; ?> ">Sell this Piglets</button>
 
+     
+  
 
 
     <!-- deletepig  Modal -->
@@ -510,7 +582,7 @@ if (isset($_POST['sellpiglets'])) {
     </div>
     <div class="col">
     <label for="pig">Number of Pigs</label>
-        <input type="number" name="pigs" id="pig" class="form-control" placeholder="Pigs" aria-label="pigs" value="<?php echo $pig['pigs']; ?>">
+        <input type="number" name="pigs" id="pig" class="form-control" placeholder="Pigs" aria-label="pigs" value="<?php echo $pig['pigs']; ?>" min="0">
     </div>
 
     </div>
@@ -530,6 +602,7 @@ if (isset($_POST['sellpiglets'])) {
     <option value="Starter">Starter</option>
     <option value="Grower">Grower</option>
     <option value="Finisher">Finisher</option>
+    <option value="Sold">Sold Out</option>
     </select>
             </div>
     </div>
@@ -578,8 +651,16 @@ if (isset($_POST['sellpiglets'])) {
         <input type="hidden" name="id" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['id']; ?>">
         <input type="hidden" name="sow_id" class="form-control"  value="<?php echo $pig['sow_id']; ?>">
         <div class="col">
-    <label for="fsowname">Name</label>
-        <input type="text" id="fsowname" name="name" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['sowname']; ?>" autocomplete="given name">
+        <label for="pigletsgrouplist">Piglet</label>
+        <select
+              id="pigletsgrouplist"
+              name="name"
+              class="form-select form-select-sm"
+              required="required"
+              onchange="pigletsgroupchange()">
+            
+              <?php echo $piglet; ?>
+            </select>
     </div>
     <div class="col">
             <label for="win">Farrowed Date</label>
@@ -595,27 +676,33 @@ if (isset($_POST['sellpiglets'])) {
     <div class="col">
     <label for="pictpiglets">Picture</label>
     <input type="file" id="pictpiglets" name="pictpiglets[]" class="form-control" multiple>
+    <input type="hidden" id="piglet_id" name="piglet_id" class="form-control">
     <input type="hidden" id="piglet-prices" name="piglet-prices" class="form-control form-control-sm rounded-0">
 </div>
 <div class="col">
+
 <label for="pigletgender">Gender</label>
+    <input type="text" id="pigletgender" name ="pigletgender" class="form-control" placeholder="Male/Female" disabled>
+
+
+<!-- <label for="pigletgender">Gender</label>
 <select name="pigletgender" id="pigletgender" class="form-select form-select-sm" aria-label="weightclass">
   <option selected>Select</option>
   <option value="Male">Male</option>
   <option value="Female">Female</option>
-</select>
+</select> -->
 
 
    
 </div>
 <div class="col">
     <label for="weight">Weight</label>
-    <input type="number" id="piglet_weight" name ="weight" class="form-control" placeholder="Kg">
+    <input type="number" id="piglet_weight" name ="weight" class="form-control" placeholder="Kg"  min="0">
 </div>
 
 <div class="col">
     <label for="priceInput">Price</label>
-    <input type="number" id="priceInput" name = "priceInput" class="form-control" placeholder="Pesos">
+    <input type="number" id="priceInput" name = "priceInput" class="form-control" placeholder="Pesos"  min="0">
 </div>
 
 <div class="col d-flex flex-column">
@@ -632,6 +719,8 @@ if (isset($_POST['sellpiglets'])) {
                         <thead>
                           <tr>
                             <th scope="col">Image</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Gender</th>
                             <th scope="col">Weight</th>
                             <th scope="col">Price</th>
                             <th scope="col">Action</th>
@@ -680,13 +769,28 @@ if (isset($_POST['sellpiglets'])) {
                         <ul class="breeders" id="carList">
                         <?php 
                             
-                            $sql ="SELECT * FROM piglets WHERE growinphase_id = :pigid AND status != 'UnHealthy'  ORDER BY id DESC";
+                            $sql ="SELECT p.*, tfsd.status AS piglet_status 
+                            FROM piglets p 
+                            LEFT JOIN tblpiglet_for_sale_details tfsd 
+                                 ON p.id = tfsd.piglet_id 
+                            WHERE p.growinphase_id = :pigid 
+                              AND p.status != 'UnHealthy'  
+                            ORDER BY p.id DESC";
+
                             $query3 = $dbh->prepare($sql);
                             $query3->bindparam(':pigid',$pigletsId ,PDO::PARAM_INT);
                             $query3->execute();
                             $results=$query3->fetchAll(PDO::FETCH_OBJ);
                             
                             foreach($results as $result){
+                                if ($result->piglet_status == "ordered"){
+                                    $piglets_status = 'Sold';
+                                }elseif($result->posted == 1){
+                                    $piglets_status = 'Posted';
+                                }else{
+                                    $piglets_status =$result->status;
+                                }
+
                             ?>
                                 
                         <li data-make="<?php echo htmlentities($result->name); ?>" data-model="<?php echo htmlentities($result->status); ?>" data-year="<?php echo htmlentities($result->age); ?>">
@@ -699,11 +803,23 @@ if (isset($_POST['sellpiglets'])) {
             <div class="card-body">
                 <h5 class="card-title"><?php echo htmlentities($result->name); ?></h5>
                 <div class="flex">
-                <p class="card-text <?php echo htmlentities($result->status); ?>"><?php echo htmlentities($result->status); ?></p>
+                <p class="card-text <?= $piglets_status; ?>">
+    <?= $piglets_status; ?>
+</p>
+
                 <p class="card-text"><span>Gender: &nbsp;</span><?php echo htmlentities($result->gender);?></p>
     <p class="card-text"><span>Feed Intake:</span><br> <?php echo $totalFeeds ?> kg</p>
     </div>
-    <a href="pigletdetails.php?id=<?php echo htmlentities($result->id); ?>&group_id=<?php echo htmlentities($pigletsId); ?>" class="view-btn">View</a>
+    <?php 
+if ($result->piglet_status == "ordered") {
+    echo '<a href="#" class="view-btn disabled-link">Sold</a>';
+} else {
+    echo '<a href="'
+    .($result->status == "Cull" ?'culling.php':'pigletdetails.php?id=' . htmlentities($result->id) . '&group_id=' . htmlentities($pigletsId)) . '" class="view-btn">View</a>';
+}
+?>
+
+ 
             </div>
         </div>
     </li>
@@ -732,39 +848,42 @@ if (isset($_POST['sellpiglets'])) {
     <div class="row">
     <div class="col">
     <label for="Breed">Breed</label>
-  <select name="breed" id="breed" class="form-select form-select-sm" aria-label="breedclass">
-  <option selected>Select</option>
+  <select name="breed" id="breed" class="form-select form-select-sm" aria-label="breedclass" required>
+  <option  value="" disabled selected>Select</option>
   <option value="Landrace">Landrace</option>
   <option value="Duroc">Duroc</option>
-  <option value="Hampshire">Hampshire</option>
-  <option value="Pietrain">Pietrain</option>
+  <option value="Hampshire"><?=$female_remaining?>Hampshire</option>
+  <option value="Pietrain"><?=$male_remaining?>Pietrain</option>
 </select>
     </div>
     </div>
     <br>
     <div class="row">
-            
-            <div class="col">
-            <label for="weandate">Gender: &nbsp;</label>
-            <input class="form-check-input" type="radio" name="gender" id="Male" value="Male">
-  <label class="form-check-label" for="Male">
-   Male
-  </label>
+  <div class="col">
+    <label>Gender: &nbsp;</label>
 
-  <input class="form-check-input" type="radio" name="gender" id="Female" value="Female">
-  <label class="form-check-label" for="Female">
-    Female
-  </label>
-
-            </div>
-            
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" 
+             name="gender" id="Male" value="Male" 
+             <?= ($male_remaining <= 0 ? 'disabled' : '') ?> required>
+      <label class="form-check-label" for="Male">Male</label>
     </div>
+
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" 
+             name="gender" id="Female" value="Female" 
+             <?= ($female_remaining <= 0 ? 'disabled' : '') ?>>
+      <label class="form-check-label" for="Female">Female</label>
+    </div>
+
+  </div>
+</div>
     <br>
     <div class="row">
             
             <div class="col">
             <label for="weandate">Status: &nbsp;</label>
-            <input class="form-check-input" type="radio" name="status" id="Healthy" value="Healthy">
+            <input class="form-check-input" type="radio" name="status" id="Healthy" value="Healthy" required>
   <label class="form-check-label" for="Healthy">
   Healthy
   </label>
@@ -826,6 +945,40 @@ if (isset($_POST['sellpiglets'])) {
         
     <script>
 
+function pigletsgroupchange() {
+    let pigletIdField = document.getElementById('piglet_id');
+    let genderField = document.getElementById('pigletgender');
+
+    var pigletsgroupselect = document.getElementById('pigletsgrouplist');
+    var selectedpigletId = pigletsgroupselect.value;
+
+    if (selectedpigletId) {
+        fetch('getChildOptions.php?piglet_id=' + selectedpigletId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && !data.error) {
+                    genderField.value = data.gender;  // assuming gender is a string
+                    pigletIdField.value = data.id;
+                } else if (data.error) {
+                    console.log('Warning:', data.error);
+                    alert('Warning: ' + data.error);
+                } else {
+                    console.log('Unexpected response:', data);
+                    alert('Unexpected error occurred.');
+                }
+            })
+            .catch(error => {
+                console.log('Error fetching child options:', error);
+                alert('An error occurred while fetching child options.');
+            });
+    }
+}
+
 
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -835,7 +988,11 @@ if (isset($_POST['sellpiglets'])) {
 
 
 addpigletsprice.addEventListener('click', ()=>{
+    let piglet_id = document.getElementById("piglet_id").value;
             let img = document.getElementById("pictpiglets");
+            let pigletSelect = document.getElementById("pigletsgrouplist");
+            let pigletId = pigletSelect.value;
+            let name = pigletSelect.options[pigletSelect.selectedIndex].text;
             let weight = document.getElementById("piglet_weight");
             let pigletgender = document.getElementById("pigletgender");
             let price = document.getElementById("priceInput");
@@ -848,6 +1005,10 @@ addpigletsprice.addEventListener('click', ()=>{
     alert("Please input a weight.");
     return;
  }
+ if (!pigletId) {
+    alert("Please select a name.");
+    return;
+}
  if(!pigletgender.value){
     alert("Please input a gender.");
     return;
@@ -861,13 +1022,14 @@ addpigletsprice.addEventListener('click', ()=>{
  let fileIndex = pigletsdetails.length;
  let rawFileName = img.files[0].name;
 let newpiglets = {
+    "piglet_id": piglet_id,
+    "name": name,
     "img": rawFileName,
     "weight":weight.value,
     "pigletgender":pigletgender.value,
     "price":price.value,
     "fileIndex": fileIndex
 }
-        
         pigletsdetails.push(newpiglets);
         document.getElementById("piglet-prices").value = JSON.stringify(pigletsdetails);
 
@@ -882,6 +1044,7 @@ let newpiglets = {
         let td3 = document.createElement("td");
         let td4 = document.createElement("td");
         let td5= document.createElement("td");
+        let td6 = document.createElement("td");
 
         let previewUrl = URL.createObjectURL(img.files[0]);
         let pigletimg = document.createElement("img");
@@ -896,12 +1059,12 @@ fileInputClone.style.display = "none";
 fileInputClone.files = img.files;
 td1.appendChild(fileInputClone);
 
-        // td1.innerText =  newpiglets.img;
-        td3.innerText = newpiglets.weight;
-        td4.innerText = newpiglets.price;
-        td2.innerText = newpiglets.pigletgender;
+        td2.innerText =  newpiglets.name;
+        td4.innerText = newpiglets.weight;
+        td5.innerText = newpiglets.price;
+        td3.innerText = newpiglets.pigletgender;
 
-        [td1,td2,td3,td4,td5].forEach(td=>td.classList.add("text-center"));
+        [td1,td2,td3,td4,td5,td6].forEach(td=>td.classList.add("text-center"));
 
 
         let removebutton = document.createElement('button');
@@ -915,12 +1078,13 @@ td1.appendChild(fileInputClone);
 
         });
 
-        td5.appendChild(removebutton);
+        td6.appendChild(removebutton);
         pigletrow.appendChild(td1);
         pigletrow.appendChild(td2);
         pigletrow.appendChild(td3);
         pigletrow.appendChild(td4);
         pigletrow.appendChild(td5);
+        pigletrow.appendChild(td6);
 
         piglets_child.appendChild(pigletrow);
 

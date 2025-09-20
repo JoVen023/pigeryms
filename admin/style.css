@@ -36,8 +36,8 @@ li {
 	--darkgreen: #055003;
 	--lesspink: #ec76de;
 	--lightgreen: #dcfadb;
-	--sidebar: linear-gradient(135deg, #5C1A00, #B33900);
-	--whitedropdown: #ffffff;
+	--sidebar: linear-gradient(135deg, #036035, #036035);
+	--whitedropdown: #068f4f;
 	--lessgreen: #24911d;
 	--gray:rgba(0, 0, 0, 0.1);
 }
@@ -145,9 +145,9 @@ body {
 	width: calc(48px - (4px * 2));
 	transition: width .3s ease;
 }
-#sidebar .side-menu li a.logout {
-	color: var(--red);
-}
+/* #sidebar .side-menu li a.logout {
+	color: var(--green);
+} */
 #sidebar .side-menu.top li a:hover {
 	color: var(--dark);
 }
@@ -175,7 +175,7 @@ body {
 	display: flex;
 	width: inherit;
 	background-color: var(--whitedropdown);
-	color: var(--dark);
+	color: var(--white);
 	opacity: 1; 
 	margin: 0px;
 	padding: 3px;
@@ -184,7 +184,7 @@ body {
 }
 #sidebar .has-submenu.open .submenu li{
 	margin-bottom: 1px;
-	color: var(--dark);
+	color: var(--white);
 	display: flex;
 	justify-content: start;
 	padding-inline-start:20px;
@@ -203,6 +203,14 @@ body {
 	color: var(--red);
 }
 
+#sidebar .has-submenu.open .submenu li .text {
+	color: var(--white);
+}
+/* #sidebar .has-submenu.open .submenu li .text:hover {
+	transform: scale(.9);          
+	transition: transform 0.2s ease, color 0.2s ease;
+	color: var(--dark);
+} */
 
 #sidebar .dropdown-icon {
 	transition: transform 0.3s ease;
@@ -377,7 +385,6 @@ input[type="checkbox"]{
 	margin-top: 1rem;
 	align-items: center;
 	justify-content: space-between;
-	grid-gap: 16px;
 	flex-wrap: wrap;
 }
 #content main .head-title .left{
@@ -389,7 +396,6 @@ input[type="checkbox"]{
 #content main .head-title .left h1 {
 	font-size: 36px;
 	font-weight: 600;
-	margin-top: 10px;
 	color: var(--dark);
 }
 
@@ -424,12 +430,21 @@ width: 100%;
 	color: var(--green);
 }
 
-#content main .table-data .order #myTable tbody tr td .openModalBtn,#content main .table-data .order #myTable tbody tr td .delete {
+#content main .table-data .order #myTable tbody tr td .openModalBtn,#content main .table-data .order #myTable tbody tr td .delete ,#content main .table-data .order #mysecondTable tbody tr td .openModalBtn{
 	border:none;
 	background-color:transparent;
 }
 #content main .table-data .order #myTable tbody tr td .openModalBtn i{
 	color:#14960F;
+	font-size: 25px;
+}
+#content main .table-data .order #mysecondTable tbody tr td .openModalBtn i{
+	color:#14960F;
+	font-size: 25px;
+}
+
+#content main .table-data .order #myTable tbody tr td .print i,#content main .table-data .order #mysecondTable tbody tr td .print i{
+	color:#3858f7;
 	font-size: 25px;
 }
  .sowModalBtn i{
@@ -477,6 +492,7 @@ width: 100%;
 color:#ffff;
 font-size:20px;
 }
+
  .action .delete i{
 	color:var(--red);
 	font-size:25px;
@@ -591,9 +607,21 @@ font-size:20px;
 	border: 1px solid var(--pink);
 	
 }
+#content main .table-data .order .breeders li .card .card-body .Posted {
+    color: var(--yellow);
+	border: 1px solid var(--light-yellow);
+	
+}
+
 #content main .table-data .order .breeders li .card .card-body .Healthy {
     color: var(--green);
 	border: 1px solid var(--lessgreen);
+	
+}
+
+#content main .table-data .order .breeders li .card .card-body .Sold {
+    color: var(--red);
+	border: 1px solid var(--red);
 	
 }
 
@@ -631,8 +659,8 @@ font-size:20px;
 	
 }
 #content main .table-data .order .breeders li .card .card-body .Posted {
-    color: var(--blue);
-	border: 1px solid var(--light-blue);
+    color: var(--yellow);
+	border: 1px solid var(--light-yellow);
 	
 }
 
@@ -756,6 +784,19 @@ font-size:20px;
 	border: 1px solid var(--lessgreen);
 	
 }
+#content main .bred .card .card-body .pigsts  .Posted {
+	color: var(--yellow);
+	border: 1px solid var(--light-yellow);
+	
+}
+
+
+#content main .bred .card .card-body .pigsts  .Sold {
+    color: var(--red);
+	border: 1px solid var(--red);
+	
+}
+
 
 #content main .bred .card .card-body .pigsts  .Diagnosed {
     color: var(--blue);
@@ -797,8 +838,8 @@ font-size:20px;
 
 
 #content main .bred .card .card-body .pigsts  .Posted {
-    color: var(--blue);
-	border: 1px solid var(--light-blue);
+    color: var(--yellow);
+	border: 1px solid var(--light-yellow);
 	
 }
 
@@ -979,7 +1020,7 @@ height: 100%;
 	#content main  .bred .card .card-body .pigsts .left-section {
 		display: flex;
 		align-items: center;
-		gap: 10px; /* Adjusts space between the title and the paragraph */
+		gap: 10px;
 	}
 	#content main  .bred .card .card-body .pigsts .right-section {
 		display: flex;
@@ -1014,6 +1055,18 @@ height: 100%;
 		#content main .bred .card .card-body .pigsts .Healthy {
 			color: var(--green);
 			border: 1px solid var(--lessgreen);
+			
+		}
+		#content main .bred .card .card-body .pigsts .Posted {
+			color: var(--yellow);
+			border: 1px solid var(--light-yellow);
+			
+		}
+
+	
+		#content main .bred .card .card-body .pigsts .Sold {
+			color: var(--red);
+			border: 1px solid var(--red);
 			
 		}
 

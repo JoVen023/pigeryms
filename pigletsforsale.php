@@ -2,7 +2,22 @@
 include('includes/config.php');
 error_reporting(0);
 
-$query = "SELECT tfs.*,tfsd.*,tfs.id AS id, tg.img AS group_image,sum(tfsd.price) AS price,count(tfsd.id) AS total_piglets FROM tblpiglet_for_sale tfs INNER JOIN tblpiglet_for_sale_details tfsd ON tfs.id = tfsd.tblpiglet_for_sale_id LEFT JOIN tblgrowingphase tg ON tg.id =tfs.growingphase_id ";
+$query = "SELECT 
+    tg.id AS id,
+    tg.sowname AS name,
+    tg.weaneddate AS farrowed_Date,
+    tg.img AS group_image,
+    SUM(tfsd.price) AS price,
+    COUNT(tfsd.id) AS total_piglets,
+    CASE 
+        WHEN COUNT(tfsd.id) = 0 THEN 'SOLD OUT'
+        ELSE 'AVAILABLE'
+    END AS status
+FROM tblgrowingphase tg
+LEFT JOIN piglets p ON p.growinphase_id = tg.id
+LEFT JOIN tblpiglet_for_sale_details tfsd ON tfsd.piglet_id = p.id AND tfsd.status = 'AVAILABLE'
+WHERE tfsd.piglet_id = p.id
+GROUP BY tg.id";
 $stmt = $dbh->query($query);
 $pigs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['weight'])) {
@@ -112,13 +127,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['weight'])) {
         $maxPrice = $maxWeight * $pricePerKg;
         
         ?>
-        <li class="pigcard">
+        <li class="pigcard" >
             <h3 class="weightpigletclass"><?php echo $pig['status']; ?></h3>
-            <img src="admin/img/img_piglets_for_sale/<?php echo $pig['img']; ?>" alt="<?php echo $pig['name']; ?>">
+            <img src="admin/img/<?php echo $pig['group_image']; ?>" alt="<?php echo $pig['name']; ?>">
             <p class="name"><?php echo $pig['name']; ?></p>
             <div class="row">
             <p class="price">Total Price: &#8369;<?php echo $pig['price']; ?></p>
-            <p class="price">Total Piglets Available: <?php echo $pig['total_piglets']; ?></p>
+            <p class="price">Piglets Available: <?php echo $pig['total_piglets']; ?></p>
             <p class="price">Date Weaned: <?php echo $formattedDate; ?></p>
             </div>
            

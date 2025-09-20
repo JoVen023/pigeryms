@@ -83,9 +83,9 @@ else{
 						</thead>
 						<tbody>
 						<?php 
-$sql ="SELECT tblusers.id, tblusers.FullName, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
+$sql ="SELECT tblusers.id, tblusers.FullName,tblusers.ContactNo, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
 FROM tblusers 
-JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.piglets = 0";
+JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.piglets = 0 AND tblorders.cull = 0 ";
 $query3 = $dbh->prepare($sql);
 $query3->execute();
 $results=$query3->fetchAll(PDO::FETCH_OBJ);
@@ -110,7 +110,24 @@ foreach($results as $result){
 	<td><?php echo htmlentities($result->mop); ?></td>
 	<td><span>&#8369;</span><?php echo htmlentities(number_format($result->total_amount,2)); ?></td>
     <td>  <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#confirmModal" data-orderid="<?php echo htmlentities($result->order_id); ?>"  
-    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button></td>
+    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button>
+
+	<!-- <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#confirmModal" data-orderid="<?php echo htmlentities($result->order_id); ?>"  
+    class="openModalBtn" ><i class='bx bx-printer'></i></button> -->
+
+	<!-- <a href="printsalespigletdetails.php?id=<?php echo htmlentities($result->order_id); ?>" class="openModalBtn print" title="Print Piglets Details" target="_blank">
+  -->
+
+<a href="#"
+	onclick ="window.open(
+	'printsalespigletdetails.php?id=<?php echo htmlentities($result->order_id); ?>',
+	'Print Reciept',
+	'width=900,height=650,scrollbars=yes'
+	);
+	return false;"
+	class="openModalBtn print" 
+	><i class='bx bx-printer'></i></a>
+</td>
 	
 </tr>
 
@@ -203,7 +220,20 @@ foreach($results as $result){
 	<td><?php echo htmlentities($result->mop); ?></td>
 	<td><span>&#8369;</span><?php echo htmlentities(number_format($result->total_amount,2)); ?></td>
     <td>  <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#confirmModal" data-orderid="<?php echo htmlentities($result->order_id); ?>"  
-    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button></td>
+    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button>
+
+	<a href="#"
+	onclick ="window.open(
+	'printsalespigletdetails.php?id=<?php echo htmlentities($result->order_id); ?>',
+	'Print Reciept',
+	'width=900,height=650,scrollbars=yes'
+	);
+	return false;"
+	class="openModalBtn print" 
+	><i class='bx bx-printer'></i></a>
+	
+	</td>
+	
 	
 </tr>
 
@@ -240,12 +270,6 @@ foreach($results as $result){
 
 
 
-
-
-
-
-
-
 <div class="table-data">
 				<div class="order">
 				<div class="left">
@@ -263,36 +287,61 @@ foreach($results as $result){
 </div>
 					<table id="mysecondTable">
 						<thead>
-							<tr>
+						<tr>
                                 <th>ID</th>
 								<th>Customer Name</th>
-								<th>Date Purchased</th>
+								<th>Date Ordered</th>
+                                <th>Date Delivered</th>
+                                <th>Mode Of Payment</th>
                                 <th>Total Amount</th>
 								<th>Details</th>
 							</tr>
 						</thead>
 						<tbody>
 						<?php 
-$sql ="SELECT * FROM tblsoworder";
+$sql ="SELECT tblusers.id, tblusers.FullName, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
+FROM tblusers 
+JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.cull = 1";
 $query4 = $dbh->prepare($sql);
 $query4->execute();
 $res=$query4->fetchAll(PDO::FETCH_OBJ);
 
-foreach($res as $resu){
-	$orderdate = new DateTime($resu->date);
+
+foreach($res as $cull){
+	$orderdate = new DateTime($cull->orderdate);
 	$formattedorderdate = $orderdate->format('F j, Y');
+
+    $deliverdate = new DateTime($cull->deliverydate);
+	$formatteddeliverdate = $deliverdate->format('F j, Y');
+    
 ?>
 							<tr>
                             <td>
-	<p><?php echo htmlentities($resu->id); ?></p>
+	<p><?php echo htmlentities($cull->id); ?></p>
 		</td>
 	<td>
-	<p><?php echo htmlentities($resu->custname); ?></p>
+	<p><?php echo htmlentities($cull->FullName); ?></p>
 		</td>
 	<td><?php echo htmlentities($formattedorderdate); ?></td>
-	<td><span>&#8369;</span><?php echo htmlentities(number_format($resu->totalamount,2)); ?></td>
-    <td>  <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#conModal" data-sowid="<?php echo htmlentities($resu->sow_id); ?>"  
-    class="sowModalBtn" ><i class='bx bx-message-alt-add'></i></button></td>
+    <td><?php echo htmlentities($formatteddeliverdate); ?></td>
+	<td><?php echo htmlentities($cull->mop); ?></td>
+	<td><span>&#8369;</span><?php echo htmlentities(number_format($cull->total_amount,2)); ?></td>
+	
+	<td>  <button type="button"  title="Click to view" data-bs-toggle="modal" data-bs-target="#confirmModal" data-orderid="<?php echo htmlentities($cull->order_id); ?>"  
+    class="openModalBtn" ><i class='bx bx-message-alt-add'></i></button>
+
+	<a href="#"
+	onclick ="window.open(
+	'printsalespigletdetails.php?id=<?php echo htmlentities($cull->order_id); ?>',
+	'Print Reciept',
+	'width=900,height=650,scrollbars=yes'
+	);
+	return false;"
+	class="openModalBtn print" 
+	><i class='bx bx-printer'></i></a>
+	
+	</td>
+	
 	
 </tr>
 

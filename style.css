@@ -11,10 +11,28 @@ input {
   font-family: "Poppins", sans-serif;
 }
 
+.input-field {
+  position: relative;
+}
+.floating-label {
+  position: absolute;
+  top: 50%;
+  left: 40px; /* adjust depending on your icon */
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #aaa;
+  transition: 0.2s ease all;
+}
+input:focus + .floating-label,
+input:not(:placeholder-shown) + .floating-label {
+  top: -10px;
+  font-size: 12px;
+  color: #333;
+}
 .container {
   position: relative;
   width: 100%;
-  background-color: #8f608bcc;
+  background-color: #ffffffcc;
   min-height: 100vh;
   overflow: hidden;
 }
@@ -192,7 +210,7 @@ form.sign-in-form {
   top: -10%;
   right: 48%;
   transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #5d1f55 0%, #151c19 100%);
+  background-image: linear-gradient(-45deg, #094C2D 0%, #094C2D 100%);
   transition: 1.8s ease-in-out;
   border-radius: 50%;
   z-index: 6;
@@ -213,17 +231,16 @@ form.sign-in-form {
   z-index: 6;
   
 }
-
 .left-panel {
   pointer-events: all;
   padding: 3rem 17% 2rem 12%;
-  margin-left: 10pc;
+  margin-left: 6px;
 }
 
 .right-panel {
   pointer-events: none;
-  padding: 3rem 12% 2rem 17%;
-  margin-left: 10pc;
+  padding: 3rem 17% 2rem 12%;
+  margin-left: 6px;
 }
 
 .panel .content {
@@ -405,20 +422,23 @@ form.sign-in-form {
   form {
     padding: 0 1.5rem;
   }
-
+  .container.sign-up-mode .left-panel .content {
+    transform: translateY(-300px);
+  }
   .image {
     display: none;
   }
+  
+  
   .panel .content {
     padding: 0.5rem 1rem;
   }
   .container {
     padding: 1.5rem;
   }
-
   .container:before {
     bottom: 80%;
-    left: 50%;
+    left: 20%;
   }
   .input-field {
     margin: 5px 0;

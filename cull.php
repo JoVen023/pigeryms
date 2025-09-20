@@ -2,7 +2,7 @@
 include('includes/config.php');
 error_reporting(0);
 
-$query = "SELECT * FROM tblculling WHERE status IS NULL OR status = 'Culling'";
+$query = "SELECT * FROM tblculling WHERE status IS NULL OR status = 'Culling' AND amount > 0";
 $stmt = $dbh->query($query);
 $pigs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

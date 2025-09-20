@@ -267,7 +267,7 @@ $.ajax({
     $.ajax({
         url: 'order_details.php',
         type: 'POST',
-        data: { orderId: orderId },
+        data: { cullorderId: orderId },
         success: function(response) {
             $('#confirmModal .modal-body').html(response);
         },
@@ -296,7 +296,7 @@ $.ajax({
     }
     sowIds[sowId]++;
 
-        totalPrice += weight * price;
+        totalPrice = weight + price;
 
         if ($(this).val() === '') {
             allFilled = false;
@@ -332,6 +332,11 @@ let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 
         $('#myModal').modal('hide');
     });
+
+
+
+
+
 
     $('#cancelBtn').click(function () {
         currentStatusSelect.val('Pending');

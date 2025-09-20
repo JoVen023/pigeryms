@@ -58,7 +58,7 @@ if(isset($_POST['sowIds']) && is_array($_POST['sowIds'])) {
             exit;
         }
 
-        $sql = "UPDATE tblsales SET total_sales = total_sales + :totalprice"  ;
+        $sql = "UPDATE tblsales SET total_sales = total_sales + :totalprice WHERE id = 1 " ;
         $query1 = $dbh->prepare($sql);
         $query1->bindParam(':totalprice', $totalPrice, PDO::PARAM_INT);
         

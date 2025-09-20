@@ -4,6 +4,29 @@ include('includes/config.php');
 try {
    
 
+    if (isset($_POST['pigletid'])) {
+        $pigletid = intval($_POST['pigletid']); 
+    
+        try {
+            $sqlDelete = "DELETE FROM tblpiglet_for_sale_details WHERE piglet_id = :pigletid";
+            $stmtDelete = $dbh->prepare($sqlDelete);
+            $stmtDelete->bindParam(':pigletid', $pigletid, PDO::PARAM_INT);
+            $stmtDelete->execute();
+        
+            $sqlUpdate = "UPDATE piglets SET posted = 0 WHERE id = :pigletid";
+            $stmtUpdate = $dbh->prepare($sqlUpdate);
+            $stmtUpdate->bindParam(':pigletid', $pigletid, PDO::PARAM_INT);
+            $stmtUpdate->execute();
+        
+            echo json_encode(['success' => true]);
+            exit;
+        } catch (PDOException $e) {
+            error_log("DB Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'error' => 'Database operation failed.']);
+            exit;
+        }
+    }
+    
 
     if (isset($_POST['cull_id'])) {
         $cull_id = $_POST['cull_id'];
@@ -165,14 +188,6 @@ try {
     
     }
 
-    if (isset($_POST['pigletid'])) {
-        $pigletid = $_POST['pigletid']; 
-    
-        $sqlDeletepigs = "DELETE FROM tblpiglet_for_sale_details WHERE id = :pigletid";
-        $stmtDeletepigs = $dbh->prepare($sqlDeletepigs);
-        $stmtDeletepigs->bindParam(':pigletid', $pigletid, PDO::PARAM_INT);
-        $stmtDeletepigs->execute();
-    }
 
    
     if (isset($_POST['sowid'])) {

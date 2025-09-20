@@ -33,7 +33,7 @@ if ($_POST['orderId']) {
         $html .= ' <table class="table caption-top">';
         $html .= ' <caption>List of Pigs</caption>';
         $html .= '<thead>';
-        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th><th scope="col">Price/kg</th><th scope="col">Quantity</th><th scope="col">Weight</th></tr>';
+        $html .= '<tr><th scope="col">Id</th><th scope="col">Name</th><th scope="col">Sex</th><th scope="col" >Age</th><th scope="col">Price</th><th scope="col">Quantity</th></tr>';
         $html .= '</thead>';
         $html .='<tbody>';
         foreach ($results as $result) {
@@ -50,7 +50,7 @@ if ($_POST['orderId']) {
             $html .= '<td >' . htmlentities($result->quantity) . '</td>';
         
             $html .= '<td>';
-            $html .= '<input type="number" style="width: 100px;" class="form-control orderWeight" data-detail-id="' . htmlentities($result->id) . '" data-sow-id="' . htmlentities($result->sow_id) . '" data-price="' . htmlentities($result->price) . '" placeholder="Weight" required>';
+            // $html .= '<input type="number" style="width: 100px;" class="form-control orderWeight" data-detail-id="' . htmlentities($result->id) . '" data-sow-id="' . htmlentities($result->sow_id) . '" data-price="' . htmlentities($result->price) . '" placeholder="Weight" required>';
             $html .= '</td>';
             $html .= '</tr>';
             

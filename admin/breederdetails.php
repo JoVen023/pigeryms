@@ -95,7 +95,7 @@ if(isset($_POST['record'])){
     try {
         $query->execute();
         if ($query) {
-            $success = "Product Added" && header("refresh:1; url=breederdetails.php?id=" . $id);
+            $success = "Added" && header("refresh:1; url=breederdetails.php?id=" . $id);
         } else {
             $err = "Please Try Again Or Try Later";
         }
@@ -337,7 +337,13 @@ if(isset($_POST['update'])){
     // Execute the query
     try {
         $query->execute();
-        echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'breederdetails.php?id=" . $Id . "';</script>";
+        if ($query) {
+            $success = "Added" && header("refresh:1; url=breederdetails.php?id=" . $Id);
+        } else {
+            $err = "Please Try Again Or Try Later";
+        }
+
+        // echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'breederdetails.php?id=" . $Id . "';</script>";
 
     } catch (PDOException $ex) {
         echo $ex->getMessage();
@@ -352,7 +358,9 @@ if(isset($_POST['move'])){
     $pigname = $_POST['name'];
     $pig = $_POST['pig'];
     $total_farrowed = $_POST['total_farrowed'];
-    $pigs = $_POST['piglets'];
+    $male = $_POST['male'];
+    $female = $_POST['female'];
+    $totalpigs = $male +$female;
     $weaned = $_POST['movingdate'];
     $date_farrowed = $_POST['date_farrowed'];
     $weaner = new DateTime($weaned);
@@ -392,7 +400,7 @@ $query1->bindParam(':id', $id, PDO::PARAM_INT);
 $query1->bindParam(':date_farrowed', $date_farrowed, PDO::PARAM_STR);
 $query1->bindParam(':weaned', $weaned, PDO::PARAM_STR); // Add the missing parameter
 $query1->bindParam(':total_pigs', $pig, PDO::PARAM_INT); // Corrected parameter name
-$query1->bindParam(':survived', $pigs, PDO::PARAM_INT);
+$query1->bindParam(':survived', $totalpigs, PDO::PARAM_INT);
 $query1->execute();
 
 
@@ -421,12 +429,14 @@ $query1->execute();
         $filename = $currentData->img;
     }
 
-    $query = $dbh->prepare("INSERT INTO tblgrowingphase(sow_id, sowname, pigs, weaneddate, img, status,piggybloom, prestarter, starter, grower, finisher)VALUES(:id, :name, :pigs, :weaned, :pict, :status,:piggybloom_date, :prestarter_date, :starter_date, :grower_date, :finisher_date)");
+    $query = $dbh->prepare("INSERT INTO tblgrowingphase(sow_id, sowname, pigs,male,female, weaneddate, img, status,piggybloom, prestarter, starter, grower, finisher)VALUES(:id, :name, :pigs,:male,:female, :weaned, :pict, :status,:piggybloom_date, :prestarter_date, :starter_date, :grower_date, :finisher_date)");
 
 // Bind all parameters
 $query->bindParam(':id', $id, PDO::PARAM_INT);
 $query->bindParam(':name', $pigname, PDO::PARAM_STR);
-$query->bindParam(':pigs', $pigs, PDO::PARAM_INT);
+$query->bindParam(':pigs', $totalpigs, PDO::PARAM_INT);
+$query->bindParam(':male', $male, PDO::PARAM_INT);
+$query->bindParam(':female', $female, PDO::PARAM_INT);
 $query->bindParam(':weaned', $weaned, PDO::PARAM_STR);
 $query->bindParam(':status', $stats, PDO::PARAM_STR);
 $query->bindParam(':pict', $filename, PDO::PARAM_STR);
@@ -577,13 +587,20 @@ $query->execute();
 </div>
 <br>
 <div class="row">
-        <div class="col">
-        <label for="pigs" class="me-1">Piglets Survived:</label>
-            <input type="text" id="pigss" name="piglets"  class="me-3" required>
-            <input type="hidden" id="piglets" name="pig"  class="me-3" value="<?php echo $pig['piglets']; ?>">
-            <div id="piglet-error" class="text-danger mt-1 d-none">
-            Value cannot be greater than total piglets (<?php echo $pig['piglets']; ?>)
+<p for="pigs" class="me-1">Piglets Survived</p>
+</div>
+<div class="row align-items-center">
+        <div class="col-6">
+        <label for="male" class="me-1">Male:</label>
+            <input type="number" id="male" name="male" required min="0">
+            <input type="hidden" id="piglets" name="pig" value="<?php echo $pig['piglets']; ?>" >
         </div>
+        <div class="col-6">
+        <label for="female" class="me-1">Female:</label>
+        <input type="number" id="female" name="female" required min="0">
+        </div>
+        <div id="piglet-error" class="text-danger mt-1 d-none">
+            Value cannot be greater than total piglets (<?php echo $pig['piglets']; ?>)
         </div>
 </div>
 <br>
@@ -636,14 +653,15 @@ $query->execute();
       <div class="card-body">
       <div class="pigsts">
     <div class="left-section"> <!-- A container to group the title and the status text -->
-        <h2 class="card-title"><?php echo $pig['name']; ?></h2>
-    </div>
+    <button type="button" class="btn btn-md btn-primary me-2" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>>Update</button>
+   <button type="button" class="btn btn-sm cullingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?= htmlentities($pig['id']) ?>" data-pigid="<?=  htmlentities($pig['id']) ?>">Move To Cull</button>
+</div>
     <div class="right-section"> <!-- A container for the trash icon -->
     <p class="card-text <?php echo $pig['status']; ?>"> <?php echo $pig['status']; ?></p>
     <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>><i class='bx bx-trash'></i></button><span></span>
     </div>
 </div>
-
+<h2 class="card-title"><?php echo $pig['name']; ?></h2>
             <p class="card-text"><span>Age:</span> <?php echo $pig['age']; ?></p>
             <p class="card-text"><span>Number of Times Farrowed:</span> <?php echo $pig['total_farrowed']; ?></p>
            
@@ -653,7 +671,7 @@ $query->execute();
         // If status is "Forrowing", display breeding start and forrowing date
         echo '<p class="card-text"><span>Breeding Start:</span> ' . htmlentities($formattedbreed) . '</p>';
         echo '<p class="card-text"><span>Farrowing Date:</span> ' . htmlentities($formattedforrow) . ' - ' . htmlentities($formattedfifteenDayAfter) . '</p>';
-    } elseif ($pig['status'] == "Lactating") {
+    } if ($pig['status'] == "Lactating") {
         // If status is "Lactating", display piglets and gestate ends
         echo '<p class="card-text"><span>Piglets:</span> ' . htmlentities($pig['piglets']) . '</p>';
         echo '<p class="card-text"><span>Male:</span> ' . htmlentities($pig['male']) . '</p>';
@@ -662,13 +680,13 @@ $query->execute();
         echo '<p class="card-text"><span>Gestate Ends:</span>  ' . htmlentities($formattedgestate) . '</p>';
     }
     else{
-        echo  '<br><button type="button" class="btn btn-sm cullingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-' . htmlentities($pig['id']) .'" data-pigid="' . htmlentities($pig['id']) .'">Move To Culling</button>';
+        echo  '<br>';
     }
     
 ?>
 
 
-<button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>>Update</button>
+
 
 <!-- move to culling  Modal -->
 <div class="modal fade" id="cullingModal-<?php echo $pig['id']; ?>" tabindex="-1"  aria-labelledby="cullingModalLabel-<?php echo $pig['id']; ?>" aria-hidden="true">
@@ -745,7 +763,7 @@ $query->execute();
     <input type="text"  id="fullname"name="name" class="form-control" autocomplete="given-name" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['name']; ?>"/>
   </div>
   <div class="col">
-  <label for="fullname"># Farrowed</label>
+  <label for="farrowed"># Farrowed</label>
     <input type="number" id="farrowed" name="farrowed" class="form-control" placeholder="How many times Farrowed" aria-label="Farrowed" autocomplete="Farrowed" value="<?php echo $pig['total_farrowed']; ?>"readonly/>
   </div>
 </div>
@@ -753,12 +771,12 @@ $query->execute();
 <div class="row">
         
         <div class="col">
-        <label for="fullname">Age(Month)</label>
-          <input type="text" name="age"class="form-control" placeholder="Month" aria-label="Month" value="<?php echo $pig['age']; ?>"/>
+        <label for="age">Age(Month)</label>
+          <input type="text" name="age" id="age"class="form-control" placeholder="Month" aria-label="Month" value="<?php echo $pig['age']; ?>"/>
         </div>
         <div class="col">
-        <label for="fullname">Status</label>
-  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass">
+        <label for="statusSelect">Status</label>
+  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass"<?php echo ($pig['status'] == 'Lactating' ) ?'disabled':'';?>>
   <option value="<?php echo $pig['status'];?>" selected><?php echo $pig['status'];?></option>
   <option value="Breeding">Breeding</option>
   <option value="Farrowing">Farrowing</option>
@@ -782,17 +800,17 @@ $query->execute();
    </div>
     <br>
     <div class="col" id="gestatingFieldsPigletsmale" style="<?php echo ($pig['status'] == "Lactating") ? 'display: block;' : 'display: none;'; ?>">
-        <label for="piglets" class="me-1">Male:</label>
-        <input type="number" name="male" id="pigletsm" class="me-1" value="<?php echo $pig['male'] ?>">
+        <label for="pigletsm" class="me-1">Male:</label> 
+        <input type="number" name="male" id="pigletsm" class="me-1" value="<?php echo $pig['male'] ?>" min="0">
     </div>
     <br>
     <div class="col" id="gestatingFieldsPigletsfemale" style="<?php echo ($pig['status'] == "Lactating") ? 'display: block;' : 'display: none;'; ?>">
-        <label for="piglets" class="me-1">Female:</label>
-        <input type="number" name="female" id="pigletsf" class="me-1" value="<?php echo $pig['female'] ?>">
+        <label for="pigletsf" class="me-1">Female:</label>
+        <input type="number" name="female" id="pigletsf" class="me-1" value="<?php echo $pig['female'] ?>" min="0">
     </div>
     <br>
     <div class="col mt-1 p-2" id="gestatingFieldsPigletstotal" style="<?php echo ($pig['status'] == "Lactating") ? 'display: block;' : 'display: none;'; ?>">
-        <label for="pigletstotal" class="me-1">Mortality:(If all the piglets didn't survived input all the total piglets)</label>
+        <label for="totalpiglets" class="me-1">Mortality:(If all the piglets didn't survived input all the total piglets)</label>
         <input type="number" name="totalpiglets" id="totalpiglets"  class="w-50  me-1" value="<?php echo $pig['piglets'] ?>">
     </div>
     
@@ -1040,30 +1058,33 @@ $query->execute();
 	<!-- CONTENT -->
 	
 <script>
-	$(document).ready(function() {
-    $("#searchInput").on("keyup", function() {
-        var value = $(this).val().toLowerCase();
+// 	$(document).ready(function() {
+//     $("#searchInput").on("keyup", function() {
+//         var value = $(this).val().toLowerCase();
 
-        $("#carList li").filter(function() {
-            var combinedData = $(this).data('make') + " " + $(this).data('model') + " " + $(this).data('year');
+//         $("#carList li").filter(function() {
+//             var combinedData = $(this).data('make') + " " + $(this).data('model') + " " + $(this).data('year');
 
-            $(this).toggle(combinedData.toLowerCase().indexOf(value) > -1);
-        });
-    });
-	$('[data-bs-toggle="popover"]').popover();
+//             $(this).toggle(combinedData.toLowerCase().indexOf(value) > -1);
+//         });
+//     });
+// 	$('[data-bs-toggle="popover"]').popover();
 
 
-});
+// });
 
 document.addEventListener('DOMContentLoaded', function() {
 
     const form = document.getElementById("formmoved"); 
-    const pigsInput = document.getElementById("pigss");
-    const totalPiglets = parseInt(document.getElementById("piglets").value);
+    const pfemaleinput =document.getElementById("female");
+    const pmaleinput =document.getElementById("male"); 
+    const totalPiglets = parseInt(document.getElementById("piglets").value)  || 0;
     const errorDiv = document.getElementById("piglet-error");
 
-    form.addEventListener("submit", function (e) {
-        const inputValue = parseInt(pigsInput.value);
+    form.addEventListener("submit", function (e) {  
+        const pmale =  parseInt(pmale.value)||0;
+        const pfemale=    parseInt(pfemale.value)  || 0;
+        const inputValue = pfemale + pmale ;
 
         if (inputValue > totalPiglets) {
             e.preventDefault(); 
@@ -1228,12 +1249,12 @@ $(document).on("click", ".updateModalBtn", function() {
         <br>
         <div class="row">
         <label for="tot">Total Piglets</label>
-        <input type="number" name="total" id="tot" class="form-control"  autocomplete="given-name" value="${response.total_piglets}">
+        <input type="number" name="total" id="tot" class="form-control"  autocomplete="given-name" value="${response.total_piglets}" min="0">
         </div>
         <br>
         <div class="row">
         <label for="survive">Survived</label>
-        <input type="number" name="survive" id="survive" class="form-control"  autocomplete="given-name" value="${response.survived}">
+        <input type="number" name="survive" id="survive" class="form-control"  autocomplete="given-name" value="${response.survived}" min="0">
         </div>
       </div>
 

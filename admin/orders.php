@@ -286,9 +286,12 @@ $.ajax({
         var weights = {};
         var sowIds = {}; 
         var totalPrice = 0;
+        var hasError = true;
     $('.orderWeight').each(function() {
         var detailId = $(this).data('detail-id');
         var sowId = $(this).data('sow-id');
+        var minweight = $(this).data('min');
+        var maxweight = $(this).data('max');
         var weight = $(this).val();
         var priceInput = $('.orderPrice[data-detail-id="' + detailId + '"]');
         var price = parseFloat(priceInput.val());
@@ -305,10 +308,15 @@ $.ajax({
             allFilled = false;
             return false; // Break out of the .each() loop
         }
+        if(weight < minweight || weight > maxweight){
+            alert('Inputted weight is not in range with the weight class');
+            hasError = false;
+            return false;
+        }
     });
-    console.log(totalPrice);
-
-    // If not all fields are filled, show an alert and don't proceed
+    if (!hasError) {
+    return; 
+}
     if (!allFilled) {
         alert('Please fill all the weight fields.');
         return;
@@ -316,11 +324,9 @@ $.ajax({
     
         currentStatusSelect.attr('disabled', true);
 
-        // Get the order ID from the select data attribute
         var orderId = currentStatusSelect.data('orderid');
         let today = new Date();
 let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-        // Make an AJAX POST request to update the order status in the database
         $.ajax({
             url: 'update_order_status.php',
             type: 'POST',
@@ -340,6 +346,13 @@ let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
         $('#myModal').modal('hide');
     });
 
+
+
+
+
+
+
+    
     // Cancel button click event
     $('#cancelBtn').click(function () {
         // Set the status back to 'Pending'

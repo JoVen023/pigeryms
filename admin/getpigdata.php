@@ -40,7 +40,7 @@ if (!empty($_POST['pigId'])) {
 if (!empty($_POST['forpigletsId'])) {
     $pigletsId = $_POST['forpigletsId'];
 
-    $sql = "SELECT tfsd.*, tfs.Farrowed_Date, tfs.name ,tfs.id as main_id
+    $sql = "SELECT tfsd.*, tfs.Farrowed_Date, tfs.name AS dname,tfsd.name ,tfs.id AS main_id
             FROM tblpiglet_for_sale_details tfsd
             LEFT JOIN tblpiglet_for_sale tfs 
                 ON tfsd.tblpiglet_for_sale_id = tfs.id

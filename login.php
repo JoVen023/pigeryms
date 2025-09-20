@@ -152,16 +152,10 @@ error:function (){}
               <br>
               <span id="user-availability-status" style="font-size:12px;"></span> 
             </div>   
+      
             <div class="input-field">
-              <i class="fas fa-lock"></i>
-              <input type="password" id="signin-password" name="password" placeholder="Password" required />
-  <span class="toggle-password" onclick="togglePasswordVisibility('signin-password')">
-    <i id="signin-password-eye-icon" class="fas fa-eye-slash"></i>
-  </span>
-</div>
-            <div class="input-field">
-              <i class="fas fa-mobile"></i>
-              <input type="text" name="mobileNumber" placeholder="Mobile Number"required/>
+              <i class="fas fa-phone"></i>
+              <input type="text" name="mobileNumber" id="mobilenumber" placeholder="Mobile Number"required oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
             </div>
         
             <div class="input-field">
@@ -175,6 +169,13 @@ error:function (){}
               <i class="fas fa-map-marker-alt"></i>
               <input type="text" name="address" placeholder="Address"required/> 
             </div>
+            <div class="input-field">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="signin-password" name="password" placeholder="Password" required />
+  <span class="toggle-password" onclick="togglePasswordVisibility('signin-password')">
+    <i id="signin-password-eye-icon" class="fas fa-eye-slash"></i>
+  </span>
+</div>
             <div class="input-field" id="confirm">
               <i class="fas fa-lock"></i>
               <input type="password" id="confirm-password" name="confirmPassword" placeholder="Confirm Password" required />
@@ -224,6 +225,9 @@ error:function (){}
       </div>
     </div>
     <script>
+      document.getElementById('dob').addEventListener('focus', function (e) {
+    e.target.type = 'date';
+});
       function togglePasswordVisibility(inputId) {
   var passwordInput = document.getElementById(inputId);
   var eyeIcon = document.getElementById(inputId + "-eye-icon");
@@ -244,21 +248,49 @@ function validatePassword() {
     var confirmPassword = document.getElementById("confirm-password").value;
     var confirmPasswordFields = document.getElementById("confirm-password");
     var confirmPasswordField = document.getElementById("confirm");
+    var dob = document.getElementById("dob").value;
+    var mobile = document.getElementById("mobilenumber").value.trim();
 
-    if (password !== confirmPassword) {
-        alert("Password does not match");
-        confirmPasswordFields.value = "";
-        confirmPasswordField.style.border = "2px solid red"; // Highlight the field
-        confirmPasswordFields.focus(); // Put focus back on the field
-        return false; // Prevent form submission
+    if (password.length < 8)  {
+      alert("Password must be 8  characters or higher");
+      return false; 
     }
 
-    return true; // Allow form submission
+    if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        confirmPasswordField.value = "";
+        confirmPasswordField.style.border = "2px solid red";
+        confirmPasswordField.focus();
+        return false;
+    } else {
+        confirmPasswordField.style.border = ""; 
+    }
+
+    var mobileRegex = /^[0-9]{11}$/; 
+    if (!mobileRegex.test(mobile)) {
+        alert("Mobile number must contain digits only");
+        return false;
+    }
+
+
+  if (dob) {
+        var today = new Date();
+        var birthDate = new Date(dob);
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 20) {
+            alert("You must be at least 20 years old to sign up");
+            return false;
+        }
+    }
+
+    return true; 
 }
-document.getElementById('dob').addEventListener('focus', function (e) {
-    e.target.type = 'date';
-    e.target.removeEventListener('focus', arguments.callee);
-});
+
     </script>
     
     <script src="assets/js/jquery.min.js"></script>

@@ -2,6 +2,39 @@
 
 
 
+function getPiglet($dbh,$group_id){
+
+    $query = "SELECT `id`, `name`, `gender`, `breed`, COUNT(id) AS total 
+              FROM `piglets`  
+              WHERE growinphase_id = :id AND posted = 0 
+              GROUP BY `name`, `gender`, `breed`, `id`
+              ORDER BY `name` ASC";
+
+
+    $stmt = $dbh->prepare($query);
+    try {
+        $stmt->execute([':id'=>$group_id]);
+    } catch (PDOException $ex) {
+        echo $ex->getTraceAsString();
+        echo $ex->getMessage();
+        exit;
+    }
+    
+    $data = '<option value="">Select Piglet</option>';
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+       
+            $data =
+                $data .
+                '<option value="' .
+                $row['id'] .'" data-pigs="' . $row['name'] . '">' .
+                $row['name'] .'(' . $row['total'] . 
+                ')</option>';
+        }
+    return $data;
+
+    }
+
+
 function getMenutype($dbh, $sowId = 0)
 {
     $query = "SELECT 
@@ -65,7 +98,7 @@ while ($countRow = $countStmt->fetch(PDO::FETCH_ASSOC)) {
 
 function getPigletgroup($dbh, $pigletId = 0)
 {
-    $query = "SELECT `id`, `sowname`,`pigs`,count(id) as total FROM `tblgrowingphase`  WHERE (status = 'Piggybloom') ORDER BY `sowname` ASC;";
+    $query = "SELECT `id`, `sowname`,`pigs`FROM `tblgrowingphase`  WHERE status = 'Piggybloom' ORDER BY `sowname` ASC";
 
     $stmt = $dbh->prepare($query);
     try {
@@ -97,15 +130,13 @@ while ($countRow = $countStmt->fetch(PDO::FETCH_ASSOC)) {
                 $data .
                 '<option selected="selected" value="' .
                 $row['id'] .'" data-pigs="' . $row['pigs'] . '">'.
-                $row['sowname'] . ' (' . $row['total'] . 
-                ')</option>';
+                $row['sowname'] . '</option>';
         } else {
             $data =
                 $data .
                 '<option value="' .
                 $row['id'] .'" data-pigs="' . $row['pigs'] . '">' .
-                $row['sowname'] .'(' . $row['total'] . 
-                ')</option>';
+                $row['sowname'] .'</option>';
         }
     }
     return $data;

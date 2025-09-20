@@ -288,11 +288,11 @@ $gestating=$query1->rowCount();
         
   <div class="col">
   <label for="fullname">Name</label>
-    <input type="text" id="fullname" name="name" class="form-control" placeholder="Sow name" aria-label="First name" autocomplete="given-name">
+    <input type="text" id="fullname" name="name" class="form-control" placeholder="Sow name" aria-label="First name" autocomplete="given-name" required>
   </div>
   <div class="col">
   <label for="fullname"># Farrowed</label>
-    <input type="number" id="farrowed" name="farrowed" class="form-control" placeholder="How many times Farrowed" aria-label="Farrowed" autocomplete="Farrowed">
+    <input type="number" id="farrowed" name="farrowed" class="form-control" placeholder="How many times Farrowed" aria-label="Farrowed" autocomplete="Farrowed" required min="0">
   </div>
 </div>
 <br>
@@ -300,11 +300,11 @@ $gestating=$query1->rowCount();
         
         <div class="col">
         <label for="fullname">Age(Month)</label>
-          <input type="number" name="age"class="form-control" placeholder="Month" aria-label="Month">
+          <input type="number" name="age"class="form-control" placeholder="Month" aria-label="Month" required min="0">
         </div>
         <div class="col">
         <label for="fullname">Status</label>
-  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass">
+  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass" required>
   <option selected>Select</option>
   <option value="Breeding">Breeding</option>
   <option value="Farrowing">Farrowing</option>
@@ -330,7 +330,7 @@ $gestating=$query1->rowCount();
 		<label for="forrowingDate" class="me-1">Farrowing Date:</label>
             <input type="date" name="forrowingdate" id="forrowingDate" class="me-5">
             <label for="piglets" class="me-1">Piglets:</label>
-            <input type="number" name="pigs" id="piglets" class="me-3">
+            <input type="number" name="pigs" id="piglets" class="me-3" min="0">
         </div>
     </div>
 </div>
@@ -340,7 +340,7 @@ $gestating=$query1->rowCount();
       <div class="row">
       <div class="col">
                                  <label for="map">Picture</label></label>
-  									<input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0">
+  									<input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0" required>
 								</div>
 </div>
 

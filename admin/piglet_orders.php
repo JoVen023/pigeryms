@@ -279,9 +279,7 @@ $.ajax({
 });
 
 
-    // Confirm button click event
     $('#confirmBtn').click(function () {
-        // Disable the select input
         var allFilled = true;
         var weights = {};
         var sowIds = {}; 
@@ -299,16 +297,14 @@ $.ajax({
     }
     sowIds[sowId]++;
 
-        totalPrice += weight * price;
+        totalPrice =  price;
 
         if ($(this).val() === '') {
             allFilled = false;
-            return false; // Break out of the .each() loop
+            return false;
         }
     });
     console.log(totalPrice);
-
-    // If not all fields are filled, show an alert and don't proceed
     if (!allFilled) {
         alert('Please fill all the weight fields.');
         return;
@@ -316,7 +312,6 @@ $.ajax({
     
         currentStatusSelect.attr('disabled', true);
 
-        // Get the order ID from the select data attribute
         var orderId = currentStatusSelect.data('orderid');
         let today = new Date();
 let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();

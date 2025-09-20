@@ -76,8 +76,8 @@
 				</a>
 			</li>
 		
-		</ul>
-		<ul class="side-menu">
+		<!-- </ul>
+		<ul class="side-menu"> -->
 			<li>
 				<a href="managepage.php">
 					<i class='bx bxs-cog' ></i>

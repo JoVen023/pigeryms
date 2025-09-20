@@ -1520,7 +1520,24 @@ color:#000;
   overflow: hidden;
 }
 
+.disabled-link {
+  pointer-events: none;  
+  color: gray;          
+  cursor: not-allowed;
+  text-decoration: none;
+}
 
+.order-btn-sold {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #d11504;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
 
 
 
@@ -1915,7 +1932,7 @@ select#weight option:checked {
             padding: 0;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            grid-gap: -2px;
+            grid-gap: 10px;
             
         }
         .pigs .empty{
@@ -1982,7 +1999,31 @@ line-height: 1.2; }
   object-fit: cover;
   margin-bottom: 10px;
 }
+.disabled-link {
+  pointer-events: none; /* disables all clicks */
+  color: gray;
+  cursor: not-allowed;
+  text-decoration: none;
+}
 
+.pigletcard .view-btn-sold {
+  opacity: 0;
+  position: absolute;
+  bottom: 35%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  padding: 10px 20px;
+  background-color: #e20000;
+  border: none;
+  
+  color: #333;
+  visibility: hidden;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.3s, transform 0.3s;
+  } 
+
+  
 .pigletcard .view-btn {
 opacity: 0;
 position: absolute;

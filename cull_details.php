@@ -29,12 +29,12 @@ $pig = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (isset($_POST['placeorder'])) {
   $mop = $_POST['mop'];
-  $total_amount= $_POST['pig_price'];
+  $pig_price= $_POST['pig_price'];
   // Insert the order into tblorders table
-  $stmt = $dbh->prepare("INSERT INTO tblorders (cust_id, mop,total_amount,orderstatus,canceltime ) VALUES (:cust, :mop,:total_amount, :status,DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL 8 HOUR))");
+  $stmt = $dbh->prepare("INSERT INTO tblorders (cust_id, mop,total_amount,orderstatus,canceltime,cull,piglets ) VALUES (:cust, :mop,:total_amount, :status,DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL 8 HOUR),1,0)");
   $stmt->bindParam(':cust', $customerId, PDO::PARAM_INT);
   $stmt->bindParam(':mop', $mop, PDO::PARAM_STR);
-  $stmt->bindParam(':total_amount', $total_amount, PDO::PARAM_STR);
+  $stmt->bindParam(':total_amount', $pig_price, PDO::PARAM_STR);
   $stmt->bindValue(':status', 'Pending');
 
   $stmt->execute();
@@ -44,15 +44,15 @@ if (isset($_POST['placeorder'])) {
   $pig_name = $_POST['pig_name'];
   $pig_id = $_POST['pig_id'];
   $sow_id = $_POST['sow_id'];
-  $pig_price = $_POST['pig_price'];
+//   $pig_price = $_POST['pig_price'];
   $quantity = $_POST['quantity'];
   $weight = $_POST['weight'];
   $sex = $_POST['sex'];
   $age = $_POST['age'];
 
 
-  $stmt = $dbh->prepare("INSERT INTO tblorderdetails (order_id,pig_id,sow_id, name, price, quantity, weight_class, sex, age) 
-                          VALUES (:order_id,:pig_id,:sow_id, :pig_name, :pig_price, :quantity, :weight, :sex, :age)");
+  $stmt = $dbh->prepare("INSERT INTO tblorderdetails (order_id,pig_id,sow_id, name, price, quantity, weight_class, sex, age,cull) 
+                          VALUES (:order_id,:pig_id,:sow_id, :pig_name, :pig_price, :quantity, :weight, :sex, :age,1)");
   $stmt->bindParam(':order_id', $order_id, PDO::PARAM_INT);
   $stmt->bindParam(':pig_id', $pig_id, PDO::PARAM_INT);
   $stmt->bindParam(':pig_name', $pig_name, PDO::PARAM_STR);

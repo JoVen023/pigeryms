@@ -23,28 +23,26 @@ else{
 
     if(isset($_POST['home'])) {
         $tag = $_POST['tag'];
-        // Handle the file upload
-        if ($_FILES['homepict']['error'] == UPLOAD_ERR_OK) { // Check if upload was successful
-            // Create a unique filename
+        if ($_FILES['homepict']['error'] == UPLOAD_ERR_OK) { 
             $filename =basename($_FILES['homepict']['name']);
     
-            // Specify the path to save the uploaded file to
             $uploadPath = 'img/' . $filename;
     
-            // Move the uploaded file to the desired directory
             if (move_uploaded_file($_FILES['homepict']['tmp_name'], $uploadPath)) {
-                // Prepare the query
                 $query = $dbh->prepare("UPDATE tblmanage SET tag=:tag, img=:img WHERE id=:id");
     
-                // Bind the parameters
                 $query->bindParam(':tag', $tag, PDO::PARAM_STR);
                 $query->bindParam(':img', $filename, PDO::PARAM_STR);
                 $query->bindParam(':id', $id, PDO::PARAM_INT);
-    
-                // Execute the query
                 try {
                     $query->execute();
-                    echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
+                    if($query){
+                      $success = "Updated Successfully" && header("refresh:1;url=managepage.php");
+            
+                    }else{
+                      $error = "Please try again Later";
+                    }
+                    // echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
                 } catch (PDOException $ex) {
                     echo $ex->getMessage();
                     exit;
@@ -62,20 +60,23 @@ else{
         $mobile = $_POST['mobile'];
         $telephone = $_POST['telephone'];
         
-        // Handle the file upload
       
                 $query = $dbh->prepare("UPDATE tblmanage SET emailaddress=:email, mobilenumber=:mobile,phonenumber=:telephone WHERE id=:id");
     
-                // Bind the parameters
                 $query->bindParam(':email', $email, PDO::PARAM_STR);
                 $query->bindParam(':mobile', $mobile, PDO::PARAM_INT);
                 $query->bindParam(':telephone', $telephone, PDO::PARAM_INT);
                 $query->bindParam(':id', $id, PDO::PARAM_INT);
     
-                // Execute the query
                 try {
                     $query->execute();
-                    echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
+                    if($query){
+                      $success = "Updated Successfully" && header("url=managepage.php");
+            
+                    }else{
+                      $error = "Please try again Later";
+                    }
+                    // echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
                 } catch (PDOException $ex) {
                     echo $ex->getMessage();
                     exit;
@@ -85,29 +86,35 @@ else{
         if(isset($_POST['about'])) {
             $abouts = $_POST['aboutus'];
             $products = $_POST['products'];
-            // Handle the file upload
-            if ($_FILES['map']['error'] == UPLOAD_ERR_OK) { // Check if upload was successful
-                // Create a unique filename
+            
+            if ($_FILES['map']['error'] == UPLOAD_ERR_OK) {  
+               
                 $filename =basename($_FILES['map']['name']);
         
-                // Specify the path to save the uploaded file to
+            
                 $uploadPath = 'img/' . $filename;
         
-                // Move the uploaded file to the desired directory
+            
                 if (move_uploaded_file($_FILES['map']['tmp_name'], $uploadPath)) {
-                    // Prepare the query
+                     
                     $query = $dbh->prepare("UPDATE tblmanage SET about=:abouts,products=:products, map=:img WHERE id=:id");
         
-                    // Bind the parameters
+                   
                     $query->bindParam(':abouts', $abouts, PDO::PARAM_STR);
                     $query->bindParam(':products', $products, PDO::PARAM_STR);
                     $query->bindParam(':img', $filename, PDO::PARAM_STR);
                     $query->bindParam(':id', $id, PDO::PARAM_INT);
         
-                    // Execute the query
+                
                     try {
                         $query->execute();
-                        echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
+                        if($query){
+                          $success = "Updated Successfully" && header("url=managepage.php");
+                
+                        }else{
+                          $error = "Please try again Later";
+                        }
+                        // echo "<script type='text/javascript'>alert('Updated Successfully'); window.location.href = 'managepage.php';</script>";
                     } catch (PDOException $ex) {
                         echo $ex->getMessage();
                         exit;
@@ -146,6 +153,7 @@ else{
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
+<script src="js/swal.js"></script>
 </head>
 <body class="<?= $_SESSION['dark_mode'] ? 'dark' : '' ?>">
 
