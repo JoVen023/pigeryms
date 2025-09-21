@@ -439,9 +439,9 @@ $age = $daysDifference;
 <div class="modal" id="passwordModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header"><h5>Staff Login</h5></div>
+      <div class="modal-header"><h5>For Authorize Personnel Only</h5></div>
       <div class="modal-body">
-        <input type="password" id="staffPass" class="form-control" placeholder="Enter password">
+        <input type="password" id="staffPass" class="form-control" placeholder="Enter password to Edit">
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" id="checkPass">Continue</button>

@@ -393,7 +393,7 @@ form.sign-in-form {
 
   .container.sign-up-mode:before {
     transform: translate(-50%, 100%);
-    bottom: 20%;
+    bottom: 15%;
     right: initial;
   }
 
@@ -429,7 +429,6 @@ form.sign-in-form {
     display: none;
   }
   
-  
   .panel .content {
     padding: 0.5rem 1rem;
   }
@@ -449,9 +448,13 @@ form.sign-in-form {
     padding: 0 0.4rem;
     position: relative;
   }
+  .container.sign-up-form{
+    margin-bottom: 30px;
+
+  }
 
   .container.sign-up-mode:before {
-    bottom: 20%;
+    bottom: 25%;
     left: 50%;
   }
   .container:before {
@@ -459,7 +462,7 @@ form.sign-in-form {
     left: 50%;
   }
   .container.sign-in-mode:before {
-    bottom: 30%;
+    bottom: 25%;
     left: 50%;
   }
 }

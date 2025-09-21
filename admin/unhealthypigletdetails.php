@@ -334,7 +334,7 @@ echo '</script>';
 ?>
 <div class="row">
     <div class="col">
-    <button type="button" class="btn btn-sm breedingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>">Move To Healthy</button>
+    <button type="button" class="btn btn-sm breedingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" <?= ($pig['status'] = 'Recovered')? 'disabled' : ''; ?>>Move To Healthy</button>
     </div>
     <div class="col">
 <button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" >Update</button>

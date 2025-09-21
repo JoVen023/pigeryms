@@ -654,7 +654,7 @@ $query->execute();
       <div class="pigsts">
     <div class="left-section"> <!-- A container to group the title and the status text -->
     <button type="button" class="btn btn-md btn-primary me-2" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>>Update</button>
-   <button type="button" class="btn btn-sm cullingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?= htmlentities($pig['id']) ?>" data-pigid="<?=  htmlentities($pig['id']) ?>">Move To Cull</button>
+   <button type="button" class="btn btn-md btn-danger me-2" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?= htmlentities($pig['id']) ?>" data-pigid="<?=  htmlentities($pig['id']) ?>">Move To Cull</button>
 </div>
     <div class="right-section"> <!-- A container for the trash icon -->
     <p class="card-text <?php echo $pig['status']; ?>"> <?php echo $pig['status']; ?></p>

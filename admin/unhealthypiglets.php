@@ -145,8 +145,9 @@ $gestating=$query1->rowCount();
 
 					<ul class="breeders" id="carList">
 					<?php 
-                          
-                          $sql ="SELECT up.*,p.name as piglet_name,up.status as piglet_status,p.img as img FROM unhealthy_piglets up  LEFT JOIN  piglets p ON p.id = up.piglet_id WHERE p.status = 'UnHealthy'";
+
+// $sql ="SELECT up.*,p.name as piglet_name,up.status as piglet_status,p.img as img FROM unhealthy_piglets up  LEFT JOIN  piglets p ON p.id = up.piglet_id WHERE p.status = 'UnHealthy'";
+                          $sql ="SELECT up.*,p.name as piglet_name,up.status as piglet_status,p.img as img FROM unhealthy_piglets up  LEFT JOIN  piglets p ON p.id = up.piglet_id";
                           $query3 = $dbh->prepare($sql);
                           $query3->execute();
                           $results=$query3->fetchAll(PDO::FETCH_OBJ);

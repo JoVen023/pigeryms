@@ -191,14 +191,27 @@
                     <h5  class="<?php echo $statusClass; ?>" ><?php echo $order['orderstatus']; ?></h5>
 
         </div>
-                    <p>Ordered Date: <?php echo $formattedDate; ?></p>
-                    <p>Type Of Payment: <?php echo $order['mop']; ?></p>
-                    <p>Total Amount: <span>&#8369;</span><?php echo $order['total_amount']; ?></p>
+      
+        <div class="order-row">
+    <span class="label">Ordered Date:</span>
+    <span class="value"><?php echo $formattedDate; ?></span>
+  </div>
+
+  <div class="order-row">
+    <span class="label">Type Of Payment:</span>
+    <span class="value"><?php echo $order['mop']; ?></span>
+  </div>
+
+  <div class="order-row">
+    <span class="label">Total Amount:</span>
+    <span class="value">&#8369;<?php echo $order['total_amount']; ?></span>
+  </div>
                 </div>
 
-                <div class="order-info">
+                <div class="table-data">
                     <h3>Order Details</h3>
-                    <table>
+                    <div class="table-wrapper">
+                    <table id="myTable">
                         <thead class="orders">
                             <tr class="<?php echo $order['orderstatus']; ?>">
                                 <th>Pig Name</th>
@@ -243,7 +256,7 @@
                         </tbody>
                     </table>
                 </div>
-            
+                </div>
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" <?php if($currentTime > $cancelationTime || $order['orderstatus'] == "Completed"): echo 'style="display:none"'; endif; ?>>
             <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
             <div class="order-actions">
