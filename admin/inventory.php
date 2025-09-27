@@ -563,7 +563,10 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="col">
   <label for="childSelect">Piglets</label>
-  <select name="piglet"  class="form-select form-select-sm" id="childSelect"
+  <select name="piglet"  
+  class="form-select form-select-sm"
+   id="childSelect"
+   required="required"
    onchange="updatpigletSelect()">
   <option value="">Select Piglet</option>
 
@@ -576,26 +579,28 @@ $availableGroups = $queryGroups->fetchAll(PDO::FETCH_ASSOC);
 <br>
       <div class="row">
         
-  <div class="col">
+  <!-- <div class="col">
   <label for="name">Name</label>
-    <input type="text" name="name" id="name" class="form-control" placeholder="Pig name" aria-label="First name" autocomplete="given-name" required>
-  </div>
+  </div> -->
+  <div class="col">
+        <label for="month">Age(Month)</label>
+          <input type="number" id="month" name="age" class="form-control" placeholder="Month" aria-label="Month" readonly>
+        </div>
   <div class="col">
         <label for="price">Price/kg</label>
           <input type="number"  id="price" name="price"class="form-control" placeholder="Price" aria-label="Price" required>
+    <input type="text" name="name" id="name" class="form-control" placeholder="Pig name" aria-label="First name" autocomplete="given-name" hidden>
+
         </div>
 </div>
 <br>
 <div class="row">
         
-        <div class="col">
-        <label for="month">Age(Month)</label>
-          <input type="number" id="month" name="age"class="form-control" placeholder="Month" aria-label="Month" required>
-        </div>
+      
         <div class="col">
         <label for="weight">Weight Class</label>
   <select name="weightclass" id="weight" class="form-select form-select-sm" aria-label="weightclass" required>
-  <option selected>Select</option>
+  <option value="" disabled selected hidden>Select</option>
   <option value="30-40kg">30-40kg</option>
   <option value="40-50kg">40-50kg</option>
   <option value="50-60kg">50-60kg</option>

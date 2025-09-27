@@ -44,13 +44,12 @@ echo "<script type='text/javascript'> document.location = 'dashboard.php'; </scr
 
 
 <body>
-	<img class="green" src="img/green.png" alt="green">
-
-		<div class="wrapper">
-			<div class="image">
-				<img src="img/girl.svg">
-			</div>
-							
+		<img class="green" src="img/green.png" alt="green">
+			<div class="wrapper">
+				<div class="image">
+					<img src="img/girl.svg">
+				</div>
+								
 				<div class="loginan">
 					<form method="post">
 						<img src="img/logos.jpeg" alt="pig">
@@ -63,7 +62,7 @@ echo "<script type='text/javascript'> document.location = 'dashboard.php'; </scr
 							</div>
 							<div class="div">
 								<h5> Username </h5>
-								<input type="text"  name="username" class="input" required>
+								<input type="username"  name="username" class="input" required>
 							</div>
 						</div>
 

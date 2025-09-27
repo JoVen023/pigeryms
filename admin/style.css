@@ -944,7 +944,7 @@ box-shadow: none !important;
 #content main .table-data .order .breeders li .card .image-container {
 position: relative;
 width: 100%;
-height: 150px;
+height: 250px;
 
 }
 #content main .bred .card .row .image-container{
@@ -1836,6 +1836,23 @@ color:var(--darker)!important;
 
 
 @media screen and (max-width: 768px) {
+	.green,
+    .wrapper .image {
+        display: none; 
+    }
+
+	.loginan {
+        width: 100%;       
+            
+    }
+
+    .okie {
+        font-size: 24px;    
+    }
+
+    .btn-login {
+        width: 100%;          
+    }
 	
 	.care-timeline{
 		padding: 20px;
@@ -1946,6 +1963,22 @@ color:var(--darker)!important;
 
 
 @media screen and (max-width: 576px) {
+	.green,
+    .wrapper .image {
+        display: none; 
+    }
+
+	.loginan {
+        width: 100%;       
+    }
+
+    .okie {
+        font-size: 24px;    
+    }
+
+    .btn-login {
+        width: 100%;          
+    }
 	#content nav form .form-input input {
 		display: none;
 	}

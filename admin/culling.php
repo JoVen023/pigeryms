@@ -13,24 +13,16 @@ if(isset($_POST['add'])){
     $month=$_POST['age'];
     $age = $month . " Months";
     
-    if ($_FILES['pict']['error'] == UPLOAD_ERR_OK) { // Check if upload was successful
-      // Create a unique filename
+    if ($_FILES['pict']['error'] == UPLOAD_ERR_OK) { 
       $filename =basename($_FILES['pict']['name']);
-    
-      // Specify the path to save the uploaded file to
       $uploadPath = 'img/' . $filename;
-    
-      // Move the uploaded file to the desired directory
       if (move_uploaded_file($_FILES['pict']['tmp_name'], $uploadPath)) {
-          // Prepare the query
           $query = $dbh->prepare("INSERT INTO tblculling (name,age,status,img) VALUES (:name,:age,'Culling',:pict)");
     
-          // Bind the parameters
           $query->bindParam(':name', $pigname, PDO::PARAM_STR);
           $query->bindParam(':age', $age, PDO::PARAM_STR);
           $query->bindParam(':pict', $filename, PDO::PARAM_STR);
         }
-          // Execute the query
           try {
               $query->execute();
               echo "<script type='text/javascript'>alert('Added Successfully'); window.location.href = 'culling.php';</script>";
@@ -57,7 +49,6 @@ if(isset($_POST['add'])){
       exit;
   }
 
-      // Execute the query
       echo "<script>
       alert('Updated successfully!');
       window.location.href = 'culling.php?msg=success';
@@ -72,51 +63,80 @@ if(isset($_POST['add'])){
 
 
 
-    if(isset($_POST['move'])){
-      $id = intval($_POST['sow_id']); 
-      $custname = $_POST['custname'];
-      $date = $_POST['date'];
-      $total = $_POST['total'];
-  
-      try {
-  
-      $query = $dbh->prepare("INSERT INTO tblsoworder(sow_id, custname, date, totalamount)VALUES(:id, :name,:date,:total)");
-  
-  // Bind all parameters
-  $query->bindParam(':id', $id, PDO::PARAM_INT);
-  $query->bindParam(':name', $custname, PDO::PARAM_STR);
-  $query->bindParam(':date', $date, PDO::PARAM_STR);
-  $query->bindParam(':total', $total, PDO::PARAM_STR);
-  $query->execute();
-  
-  $query1 = $dbh->prepare("UPDATE tblculling SET status = 'Purchased' WHERE id=:id");
-  $query1->bindParam(':id', $id, PDO::PARAM_INT);
-  $query1->execute();
+  if (isset($_POST['move'])) {
+    $id       = $_POST['sow_id']; 
+    $custname = $_POST['custname'];
+    $name     = $_POST['name'];
+    $date     = $_POST['date'];
+    $total    = $_POST['total'];
 
-  $sql = "UPDATE tblsales SET total_sales = total_sales + :total"  ;
-  $query2 = $dbh->prepare($sql);
-  $query2->bindParam(':total', $total, PDO::PARAM_INT);
-  
-  try {
-      $query2->execute();
-    
-  } catch(PDOException $e) {
-      echo "Query failed: " . $e->getMessage();
-      exit;
-  }
+    // try {
+        // $dbh->beginTransaction();
 
-      // Execute the query
-      echo "<script>
-      alert('Moved successfully!');
-      window.location.href = 'sales.php?msg=success';
-    </script>";
-  } catch (PDOException $ex) {
-      error_log($ex->getMessage());
-      header("Location: sales.php?msg=error");
-      exit;
-      } 
-  
-  }
+        // Insert into tblsoworder
+        $insertSowOrder = $dbh->prepare("
+            INSERT INTO tblsoworder (sow_id, custname, date, totalamount)
+            VALUES (:id, :custname, :date, :total)
+        ");
+        $insertSowOrder->execute([
+            ':id' => $id,
+            ':custname' => $custname,
+            ':date' => $date,
+            ':total' => $total
+        ]);
+
+        // Insert into tblorders
+        $insertOrders = $dbh->prepare("
+            INSERT INTO tblorders ( walkin_customer, orderdate, mop, total_amount, orderstatus, deliverydate, cull)
+            VALUES ( :custname, :date, 'Cash', :total, 'Completed', :date, 1)
+        ");
+        $insertOrders->execute([
+            ':id' => $id,
+            ':custname' => $custname,
+            ':date' => $date,
+            ':total' => $total
+        ]);
+
+        $orderid = $dbh->lastInsertId();
+
+        $insertOrderDetails = $dbh->prepare("
+            INSERT INTO tblorderdetails (sow_id, order_id, name, price, cull)
+            VALUES (:id, :orderid, :name, :price, 1)
+        ");
+        $insertOrderDetails->execute([
+            ':id' => $id,
+            ':orderid' => $orderid,
+            ':name' => $name,
+            ':price' => $total
+        ]);
+
+        // Update culling
+        $updateCulling = $dbh->prepare("
+            UPDATE tblculling SET status = 'Purchased' WHERE id = :id
+        ");
+        $updateCulling->execute([':id' => $id]);
+
+        // Update sales
+        $updateSales = $dbh->prepare("
+            UPDATE tblsales SET total_sales = total_sales + :total
+        ");
+        $updateSales->execute([':total' => $total]);
+
+        // $dbh->commit();
+
+        echo "<script>
+            alert('Purchased successfully!');
+            window.location.href = 'sales.php?msg=success';
+        </script>";
+
+    // } catch (PDOException $ex) {
+    //     $dbh->rollBack();
+    //     error_log($ex->getMessage());
+    //     header("Location: culling.php?msg=error");
+    //     exit;
+    // }
+}
+
 	?>
 
 <!DOCTYPE html>
@@ -188,7 +208,6 @@ if(isset($_POST['add'])){
                             $query3->execute();
                             $results=$query3->fetchAll(PDO::FETCH_OBJ);
                             foreach($results as $result){
-                            
                             ?>
                                 
             <li data-make="<?php echo htmlentities($result->name); ?>" data-model="<?php echo htmlentities($result->status); ?>" data-year="<?php echo htmlentities($result->age); ?>">
@@ -216,7 +235,7 @@ if(isset($_POST['add'])){
               <button type="button" title="Update Amount" data-bs-toggle="modal" data-bs-target="#amountModal-<?php echo $result->id; ?>" class="moveModalBtn mb-1">
       <i class='bx bx-up-arrow-circle mb-1'></i>Update Amount
   </button>
-              <button type="button" title="Already Purchased" data-bs-toggle="modal" data-bs-target="#moveModal" class="moveModalBtn">
+              <button type="button" title="Already Purchased" data-bs-toggle="modal" data-bs-target="#moveModal-<?php echo $result->id; ?>" class="moveModalBtn">
       <i class='bx bx-up-arrow-circle'></i>Purchased
   </button>
 
@@ -226,42 +245,10 @@ if(isset($_POST['add'])){
       </div>
   </li>
 
-  <!-- amount sow modal -->
-
-  <div class="modal fade" id="amountModal-<?php echo $result->id; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
-      <div class="modal-content">
-        <div class="modal-header custom-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Sow Purchased Details</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          
-        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-        <div class="row">
-        <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
-        <div class="col">
-                                  <label for="total">Total Amount</label>
-                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
-                  </div>
-  </div>
-  <br>
-
-        <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" name="amount" class="btn btn-primary" id="confirmBtn">Confirm</button>
-        </div>
-        </form>
-      </div>
-    </div>
-                  </div>
-
-          </div>    
-  <!-- amount  cull modal -->
-
+  
   <!-- moveculling sow modal -->
 
-  <div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" id="moveModal-<?php echo $result->id; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-md">
       <div class="modal-content">
         <div class="modal-header custom-header">
@@ -270,11 +257,11 @@ if(isset($_POST['add'])){
         </div>
         <div class="modal-body">
           
-        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+        <form action="" method="POST">
         <div class="row">
         <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
     <div class="col">
-    <label for="fullnames">Customer Name</label>
+    <label for="fullnames">Customer Name </label>
       <input type="text" id="fullnames" name="custname" class="form-control" placeholder="Fullname" aria-label="name" required>
     </div>
   </div>
@@ -291,7 +278,8 @@ if(isset($_POST['add'])){
         <div class="row">
         <div class="col">
                                   <label for="total">Total Amount</label>
-                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
+                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" min="0" value="<?= $result->amount ?>" required>
+                      <input type="text"  name="name" class="form-control form-control-sm rounded-0" value="<?= $result->name?>" hidden>
                   </div>
   </div>
 
@@ -308,6 +296,42 @@ if(isset($_POST['add'])){
   <!-- move cull modal -->
 
 
+
+
+
+  <!-- amount sow modal -->
+
+  <div class="modal fade" id="amountModal-<?php echo $result->id; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header custom-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Update Amount</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+        <div class="row">
+        <input type="hidden" name="sow_id" class="form-control" placeholder="Pig name" aria-label="name" value="<?php echo htmlentities($result->id);?>">
+        <div class="col">
+                                  <label for="total">Total Amount</label>
+                      <input type="number" id="total" name="total" class="form-control form-control-sm rounded-0" required>
+                    
+                  </div>
+  </div>
+  <br>
+
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" name="amount" class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+        </form>
+      </div>
+    </div>
+                  </div>
+
+          </div>    
+  <!-- amount  cull modal -->
 
 
 <!-- deletepig  Modal -->

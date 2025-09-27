@@ -305,7 +305,7 @@ $gestating=$query1->rowCount();
         <div class="col">
         <label for="fullname">Status</label>
   <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass" required>
-  <option selected>Select</option>
+  <option value="" disabled selected hidden>Select</option>
   <option value="Breeding">Breeding</option>
   <option value="Farrowing">Farrowing</option>
   <option value="Lactating">Lactating</option>
@@ -383,17 +383,35 @@ document.getElementById('statusSelect').addEventListener('change', function() {
     var forrowingFieldsDiv = document.getElementById('forrowingFields');
     var gestatingFieldsDiv = document.getElementById('gestatingFields');
 
+    var breedingDate = document.getElementById('breedingDate');
+    var forrowingDate = document.getElementById('forrowingDate');
+    var piglets = document.getElementById('piglets');
+
+    breedingDate.required = false;
+    forrowingDate.required = false;
+    piglets.required = false;
+
     if (this.value === 'Farrowing') {
-        forrowingFieldsDiv.style.display = 'block';  // Show Forrowing fields
-        gestatingFieldsDiv.style.display = 'none';   // Hide Lactating fields
-    } else if (this.value === 'Lactating') {
-        forrowingFieldsDiv.style.display = 'none';   // Hide Forrowing fields
-        gestatingFieldsDiv.style.display = 'block';  // Show Lactating fields
-    } else {
-        forrowingFieldsDiv.style.display = 'none';   // Hide Forrowing fields
-        gestatingFieldsDiv.style.display = 'none';   // Hide Lactating fields
+        forrowingFieldsDiv.style.display = 'block';
+        gestatingFieldsDiv.style.display = 'none';
+
+        breedingDate.required = true;  
+        // breedingDate.valueAsDate = new Date();
+    } 
+    else if (this.value === 'Lactating') {
+        forrowingFieldsDiv.style.display = 'none';
+        gestatingFieldsDiv.style.display = 'block';
+
+        forrowingDate.required = true;
+        piglets.required = true;
+        // forrowingDate.valueAsDate = new Date(); 
+    } 
+    else {
+        forrowingFieldsDiv.style.display = 'none';
+        gestatingFieldsDiv.style.display = 'none';
     }
 });
+
 </script>
 	<script src="script.js"></script>
 </body>

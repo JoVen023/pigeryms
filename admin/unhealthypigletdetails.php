@@ -332,14 +332,27 @@ echo '</script>';
         echo  '<br>';
     
 ?>
-<div class="row">
-    <div class="col">
-    <button type="button" class="btn btn-sm breedingModalBtn" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" <?= ($pig['status'] = 'Recovered')? 'disabled' : ''; ?>>Move To Healthy</button>
-    </div>
-    <div class="col">
-<button type="button" class="btn btn-sm updateModalBtn" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" >Update</button>
-    </div>
+<div class="d-flex gap-2">
+  <button type="button" 
+          class="btn btn-md btn-success flex-fill" 
+          title="Cull Sow" 
+          data-bs-toggle="modal" 
+          data-bs-target="#cullingModal-<?php echo $pig['id']; ?>" 
+          data-pigid="<?php echo $pig['id']; ?>" 
+          <?= ($pig['status'] == 'Recovered') ? 'disabled' : ''; ?>>
+    Move To Healthy
+  </button>
+
+  <button type="button" 
+          class="btn btn-md btn-primary flex-fill" 
+          title="Update Pig" 
+          data-bs-toggle="modal" 
+          data-bs-target="#confirmModal" 
+          data-pigid="<?php echo $pig['id']; ?>">
+    Update
+  </button>
 </div>
+
 <!-- move to culling  Modal -->
 <div class="modal fade" id="cullingModal-<?php echo $pig['id']; ?>" tabindex="-1"  aria-labelledby="cullingModalLabel-<?php echo $pig['id']; ?>" aria-hidden="true">
         <div class="modal-dialog">
@@ -387,7 +400,7 @@ echo '</script>';
       <input type="hidden" name="id" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pig['id']; ?>"/>
   <div class="col">
   <label for="fullname">Date</label>
-    <input type="date"  id="date"name="date" class="form-control" autocomplete="given-name" placeholder="Pig name" aria-label="First name"/>
+    <input type="date"  id="date"name="date" class="form-control" autocomplete="given-name" placeholder="Pig name" aria-label="First name" required/>
   </div>
 
 </div>

@@ -299,9 +299,11 @@ foreach($results as $result){
 						</thead>
 						<tbody>
 						<?php 
-$sql ="SELECT tblusers.id, tblusers.FullName, tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
-FROM tblusers 
-JOIN tblorders ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.cull = 1";
+$sql ="SELECT tblorders.id, 
+IF(tblorders.cust_id = 0 ,tblorders.walkin_customer,tblusers.FullName) AS FullName,
+ tblorders.id as order_id,tblorders.orderdate,tblorders.deliverydate, tblorders.orderstatus,tblorders.total_amount,tblorders.mop, tblorders.cust_id 
+FROM  tblorders
+LEFT JOIN tblusers ON tblusers.id = tblorders.cust_id WHERE tblorders.orderstatus = 'Completed' AND tblorders.cull = 1";
 $query4 = $dbh->prepare($sql);
 $query4->execute();
 $res=$query4->fetchAll(PDO::FETCH_OBJ);

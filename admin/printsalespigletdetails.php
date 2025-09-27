@@ -8,25 +8,30 @@ function numberToWords($number) {
 
 $id = $_GET['id'] ?? 0;
 
-$stmt = $dbh->prepare("SELECT tblusers.id, tblusers.FullName, tblusers.ContactNo, tblorders.id as order_id, tblorders.orderdate, tblorders.deliverydate, tblorders.orderstatus, tblorders.total_amount, tblorders.mop, tblorders.cust_id 
-FROM tblusers 
-JOIN tblorders ON tblusers.id = tblorders.cust_id 
+$stmt = $dbh->prepare("SELECT tblusers.id, 
+ IF(tblorders.cust_id = 0, tblorders.walkin_customer, tblusers.FullName) AS FullName,
+    IF(tblorders.cust_id = 0, 'None', IF(tblusers.ContactNo = '' OR tblusers.ContactNo IS NULL, 'None', tblusers.ContactNo)) AS ContactNo,
+  tblorders.id as order_id,
+   tblorders.orderdate, 
+   tblorders.deliverydate, 
+   tblorders.orderstatus,
+    tblorders.total_amount, tblorders.mop, tblorders.cust_id 
+FROM  tblorders
+LEFT JOIN  tblusers ON tblusers.id = tblorders.cust_id 
 WHERE tblorders.id = :id");
 
 $stmt->execute([':id' => $id]);
 $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Now check if order data exists
 if ($order) {
     $buyerName = htmlspecialchars($order['FullName']);
     $amountNumeric = $order['total_amount'];
     $amount = "₱" . number_format($amountNumeric, 2);
-    $amountWords = numberToWords($amountNumeric); // Format like ₱1,234.00
+    $amountWords = numberToWords($amountNumeric); 
     $paymentType = htmlspecialchars($order['mop']);
     $contactNumber = htmlspecialchars($order['ContactNo']);
     $date = date("F j, Y", strtotime($order['orderdate']));
 } else {
-    // Fallback if no data
     $buyerName = "N/A";
     $amount = "₱0.00";
     $paymentType = "N/A";

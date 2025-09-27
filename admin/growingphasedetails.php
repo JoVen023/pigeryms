@@ -468,22 +468,8 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
         <div class="pigsts">
             
         <div class="left-section"> 
+        <h2 class="card-title"><?php echo $pig['sowname']; ?></h2>
 
-    <button type="button" class="btn btn-md btn-primary me-2 " 
-            title="Update Pig" data-bs-toggle="modal" 
-            data-bs-target="#confirmModal" 
-            data-pigid="<?php echo $pig['id']; ?>">
-      Update
-    </button>
-
-    <button type="button" 
-            class="btn btn-md btn-danger  <?= ($stat == "PiggyBloom") ? '' : 'd-none' ?>" 
-            title="Sell Piglets" data-bs-toggle="modal" 
-            data-bs-target="#sellModal" 
-            data-pigid="<?php echo $pig['id']; ?>" 
-            data-totalpiglets="<?php echo $pig['pigs']; ?>">
-      Sell Piglets
-    </button>
 
 
             
@@ -493,7 +479,6 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
         <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" ><i class='bx bx-trash'></i></button><span></span>
         </div>
     </div>
-    <h2 class="card-title"><?php echo $pig['sowname']; ?></h2>
                 <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
                 <p class="card-text"><span>Male:</span> <?php echo $pig['male']; ?> </p>
                 <p class="card-text"><span>Female:</span> <?php echo $pig['female']; ?> </p>
@@ -524,6 +509,23 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
     ?></p>
     <p class="card-text"><span>Total Feeds Consumption:</span> <?php echo $totalFeed ?> - <?php echo $totalFeeds ?> Kilograms</p>
     <br>
+ <div class="buttons-section d-flex justify-content-center">
+ <button type="button" class="btn btn-md btn-primary me-2 " 
+            title="Update Pig" data-bs-toggle="modal" 
+            data-bs-target="#confirmModal" 
+            data-pigid="<?php echo $pig['id']; ?>">
+      Update
+    </button>
+
+    <button type="button" 
+            class="btn btn-md btn-danger  <?= ($stat == "PiggyBloom") ? '' : 'd-none' ?>" 
+            title="Sell Piglets" data-bs-toggle="modal" 
+            data-bs-target="#sellModal" 
+            data-pigid="<?php echo $pig['id']; ?>" 
+            data-totalpiglets="<?php echo $pig['pigs']; ?>">
+      Sell Piglets
+    </button>
+ </div>
 
 
      
@@ -582,7 +584,7 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
     </div>
     <div class="col">
     <label for="pig">Number of Pigs</label>
-        <input type="number" name="pigs" id="pig" class="form-control" placeholder="Pigs" aria-label="pigs" value="<?php echo $pig['pigs']; ?>" min="0">
+        <input type="number" name="pigs" id="pig" class="form-control" placeholder="Pigs" aria-label="pigs" value="<?php echo $pig['pigs']; ?>" min="0" readonly>
     </div>
 
     </div>
@@ -594,22 +596,25 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
         <input type="date" name="weaned" id="win" class="form-control" placeholder="weaned date" aria-label="weaned date" value="<?php echo $pig['weaneddate']; ?>" readonly>
             </div>
             <div class="col">
-            <label for="sts">Status</label>
-    <select name="stats"  id="sts" class="form-select form-select-sm"  value="<?php echo $stats?>" aria-label="status">
-    <option selected><?php echo $stats ?></option>
-    <option value="PiggyBloom">PiggyBloom</option>
-    <option value="Pre-Starter">Pre-Starter</option>
-    <option value="Starter">Starter</option>
-    <option value="Grower">Grower</option>
-    <option value="Finisher">Finisher</option>
-    <option value="Sold">Sold Out</option>
+    <label for="sts">Status</label>
+    <select name="stats" id="sts" class="form-select form-select-sm" aria-label="status">
+        <option selected><?php echo $stats ?></option>
+        <?php
+        $statusOptions = ['PiggyBloom', 'Pre-Starter', 'Starter', 'Grower', 'Finisher', 'Sold'];
+
+        foreach ($statusOptions as $status) {
+            if ($status != $stats) {
+                echo "<option value=\"$status\">$status</option>";
+            }
+        }
+        ?>
     </select>
-            </div>
+</div>
     </div>
     <div class="row">
     <div class="col">
-    <label for="pig">Mortality</label>
-        <input type="number" name="mortality" id="mortality" class="form-control" placeholder="Mortality" aria-label="mortality" value="<?php echo $pig['mortality']; ?>">
+    <!-- <label for="pig">Mortality</label> -->
+        <input type="number" name="mortality" id="mortality" class="form-control" placeholder="Mortality" aria-label="mortality" value="<?php echo $pig['mortality']; ?>" hidden>
     </div>
     </div>
     <br>
@@ -774,7 +779,7 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
                             LEFT JOIN tblpiglet_for_sale_details tfsd 
                                  ON p.id = tfsd.piglet_id 
                             WHERE p.growinphase_id = :pigid 
-                              AND p.status != 'UnHealthy'  
+                              AND p.status NOT IN('Cull','UnHealthy','Breeder')
                             ORDER BY p.id DESC";
 
                             $query3 = $dbh->prepare($sql);
@@ -813,7 +818,9 @@ $stmtupdatetpigletdetails = $dbh->prepare("UPDATE piglets SET posted = 1 WHERE i
     <?php 
 if ($result->piglet_status == "ordered") {
     echo '<a href="#" class="view-btn disabled-link">Sold</a>';
-} else {
+} elseif($piglets_status == "Posted") {
+    echo '<a href="#" class="view-btn disabled-link">Posted</a>';
+}else{
     echo '<a href="'
     .($result->status == "Cull" ?'culling.php':'pigletdetails.php?id=' . htmlentities($result->id) . '&group_id=' . htmlentities($pigletsId)) . '" class="view-btn">View</a>';
 }

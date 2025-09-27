@@ -12,7 +12,7 @@ else{
     if(isset($_GET['id'])) {
         $breederId = intval($_GET['id']);
     } else {
-        // Handle error or redirect to another page
+      
         die('ID not provided.');
     }
 
@@ -22,6 +22,10 @@ $stmt = $dbh->prepare($query);
 $stmt->bindParam(':pigId', $breederId, PDO::PARAM_INT);
 $stmt->execute();
 $pig = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$pig){
+    echo "<h2>Pig no Found</h2>";
+    return;
+}
 $pigname = $pig['name'];
 $total_farrow= $pig['total_farrowed'];
 
@@ -200,7 +204,8 @@ if(isset($_POST['update'])){
         $query->bindParam(':id', $Id, PDO::PARAM_INT);
 
     }
-    elseif ($status == "Lactating" && $pigsm != NULL && $pigsf != 0 && $pigsm != 0 && $pigsf != NULL) {
+    // && $pigsm != NULL && $pigsf != 0 && $pigsm != 0 && $pigsf != NULL
+    elseif ($status == "Lactating") {
         $forrowingDateTime = new DateTime($forrowingdate);                     
         $forrowingDateTime->add(new DateInterval('P40D'));
         $newDate = $forrowingDateTime->format('Y-m-d');
@@ -592,12 +597,12 @@ $query->execute();
 <div class="row align-items-center">
         <div class="col-6">
         <label for="male" class="me-1">Male:</label>
-            <input type="number" id="male" name="male" required min="0">
+            <input type="number" id="male" name="male" required min="0" max="<?= $pig['male']; ?>" value="<?= $pig['male']; ?>">
             <input type="hidden" id="piglets" name="pig" value="<?php echo $pig['piglets']; ?>" >
         </div>
         <div class="col-6">
         <label for="female" class="me-1">Female:</label>
-        <input type="number" id="female" name="female" required min="0">
+        <input type="number" id="female" name="female" required min="0" max="<?= $pig['female']?>" value="<?= $pig['female']; ?>">
         </div>
         <div id="piglet-error" class="text-danger mt-1 d-none">
             Value cannot be greater than total piglets (<?php echo $pig['piglets']; ?>)
@@ -652,27 +657,24 @@ $query->execute();
     <div class="col-md-8">
       <div class="card-body">
       <div class="pigsts">
-    <div class="left-section"> <!-- A container to group the title and the status text -->
-    <button type="button" class="btn btn-md btn-primary me-2" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>>Update</button>
-   <button type="button" class="btn btn-md btn-danger me-2" title="Cull Sow" data-bs-toggle="modal" data-bs-target="#cullingModal-<?= htmlentities($pig['id']) ?>" data-pigid="<?=  htmlentities($pig['id']) ?>">Move To Cull</button>
+    <div class="left-section"> 
+<h2 class="card-title"><?php echo $pig['name']; ?></h2>
+   
 </div>
-    <div class="right-section"> <!-- A container for the trash icon -->
+    <div class="right-section"> 
     <p class="card-text <?php echo $pig['status']; ?>"> <?php echo $pig['status']; ?></p>
     <button type="button" class="btn btn-sm deleteModalBtn" title="Delete Pig" data-bs-toggle="modal" data-bs-target="#deleteModal-<?php echo $pig['id']; ?>" data-pigid="<?php echo $pig['id']; ?>" <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating' ): echo 'disabled'; endif; ?>><i class='bx bx-trash'></i></button><span></span>
     </div>
 </div>
-<h2 class="card-title"><?php echo $pig['name']; ?></h2>
             <p class="card-text"><span>Age:</span> <?php echo $pig['age']; ?></p>
             <p class="card-text"><span>Number of Times Farrowed:</span> <?php echo $pig['total_farrowed']; ?></p>
            
 
         	<?php 
     if ($pig['status']== "Farrowing") {
-        // If status is "Forrowing", display breeding start and forrowing date
         echo '<p class="card-text"><span>Breeding Start:</span> ' . htmlentities($formattedbreed) . '</p>';
         echo '<p class="card-text"><span>Farrowing Date:</span> ' . htmlentities($formattedforrow) . ' - ' . htmlentities($formattedfifteenDayAfter) . '</p>';
     } if ($pig['status'] == "Lactating") {
-        // If status is "Lactating", display piglets and gestate ends
         echo '<p class="card-text"><span>Piglets:</span> ' . htmlentities($pig['piglets']) . '</p>';
         echo '<p class="card-text"><span>Male:</span> ' . htmlentities($pig['male']) . '</p>';
         echo '<p class="card-text"><span>Female:</span> ' . htmlentities($pig['female']) . '</p>';
@@ -684,8 +686,26 @@ $query->execute();
     }
     
 ?>
-
-
+<div class="button-section d-flex justify-content-center">
+  <button type="button" 
+          class="btn btn-md btn-primary me-2" 
+          title="Update Pig" 
+          data-bs-toggle="modal" 
+          data-bs-target="#confirmModal" 
+          data-pigid="<?php echo $pig['id']; ?>" 
+          <?php if($currentDate >= $weaningDate && $pig['status'] == 'Lactating'): echo 'disabled'; endif; ?>>
+    Update
+  </button>
+  
+  <button type="button" 
+          class="btn btn-md btn-danger me-2 <?= ($pig['status'] == 'Breeding') ? '' :'d-none';?>" 
+          title="Cull Sow" 
+          data-bs-toggle="modal" 
+          data-bs-target="#cullingModal-<?= htmlentities($pig['id']) ?>" 
+          data-pigid="<?= htmlentities($pig['id']) ?>">
+    Move To Cull
+  </button>
+</div>
 
 
 <!-- move to culling  Modal -->
@@ -775,14 +795,28 @@ $query->execute();
           <input type="text" name="age" id="age"class="form-control" placeholder="Month" aria-label="Month" value="<?php echo $pig['age']; ?>"/>
         </div>
         <div class="col">
-        <label for="statusSelect">Status</label>
-  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass"<?php echo ($pig['status'] == 'Lactating' ) ?'disabled':'';?>>
-  <option value="<?php echo $pig['status'];?>" selected><?php echo $pig['status'];?></option>
-  <option value="Breeding">Breeding</option>
-  <option value="Farrowing">Farrowing</option>
-  <option value="Lactating">Lactating</option>
-</select>
-        </div>
+  <label for="statusSelect">Status</label>
+
+  <select name="status" id="statusSelect" class="form-select form-select-sm"
+          <?php echo ($pig['status'] == 'Lactating') ? 'disabled' : ''; ?>>
+    <option value="<?php echo $pig['status']; ?>" selected><?php echo $pig['status']; ?></option>
+    <?php
+      $statuses = ['Breeding', 'Farrowing', 'Lactating'];
+      foreach ($statuses as $status) {
+        if ($status !== $pig['status']) {
+          echo "<option value=\"$status\">$status</option>";
+        }
+      }
+    ?>
+  </select>
+
+  <?php if ($pig['status'] == 'Lactating'): ?>
+    <input type="hidden" name="status" value="Lactating">
+  <?php endif; ?>
+</div>
+
+
+
 </div>
 <br>
         

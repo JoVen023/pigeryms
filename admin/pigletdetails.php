@@ -78,6 +78,12 @@ $pig = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $growingphase_id = $pig['growinphase_id'];
 
+if ($pig['posted'] == 1){
+    $piglets_status = 'Posted';
+}else{
+    $piglets_status =$pig['pstatus'];
+}
+
 
 $query = "SELECT COUNT(id) AS totalpigs 
 FROM piglets 
@@ -119,7 +125,11 @@ $currentDate->setTime(0, 0, 0);
 $interval = $currentDate->diff($weaningDate);
 
 $daysDifference = $interval->days;
+$ageInMonths = ($interval->y * 12) + $interval->m;
+// $extraDays = $interval->d;
 $age = $daysDifference;
+
+
 // age
 
 
@@ -296,19 +306,16 @@ if ($query) {
 
 if(isset($_POST['addcull'])){
     $pigname=$_POST['name'];
+    $filename=$_POST['pict'];
     $month=$_POST['age'];
     $age = $month . " Months";
     
-    if ($_FILES['pict']['error'] == UPLOAD_ERR_OK) { // Check if upload was successful
-      // Create a unique filename
-      $filename =basename($_FILES['pict']['name']);
+    // if ($_FILES['pict']['error'] == UPLOAD_ERR_OK) { 
+    //   $filename =basename($_FILES['pict']['name']);
     
-      // Specify the path to save the uploaded file to
-      $uploadPath = 'img/' . $filename;
+    //   $uploadPath = 'img/' . $filename;
     
-      // Move the uploaded file to the desired directory
-      if (move_uploaded_file($_FILES['pict']['tmp_name'], $uploadPath)) {
-          // Prepare the query
+    //   if (move_uploaded_file($_FILES['pict']['tmp_name'], $uploadPath)) {
           $query = $dbh->prepare("INSERT INTO tblculling (name,age,status,img) VALUES (:name,:age,'Culling',:pict)");
     
           // Bind the parameters
@@ -321,8 +328,7 @@ if(isset($_POST['addcull'])){
           $query2->bindParam(':pigletid', $pigletsId, PDO::PARAM_STR);
        
 
-        }
-          // Execute the query
+        // }
           try {
             $query2->execute();
               $query->execute();
@@ -332,7 +338,7 @@ if(isset($_POST['addcull'])){
               exit;
           }
       }
-    }
+    // }
 
   
 	
@@ -415,12 +421,11 @@ if(isset($_POST['addcull'])){
         <div class="card-body">
         <div class="pigsts">
         <div class="left-section"> 
-        <button type="button" class="btn btn-primary btn-sm " title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
-    <button type="button" class="btn btn-danger btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Cull</button>
-    <button type="button" class="btn btn-success btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button>
+        <h2 class="card-title"><?php echo $pig['name']; ?></h2>
+    
         </div>
         <div class="right-section"> 
-            <p class="card-text <?php echo $pig['pstatus']; ?>"><?php echo $pig['pstatus']; ?></p>
+            <p class="card-text <?php echo $piglets_status ?>"><?php echo $piglets_status ?></p>
         <?php if (!empty($qrImagePath)): ?>
             <a href="#" class="btn btn-sm" 
    onclick="window.open('print_qr.php?img=<?php echo urlencode($qrImagePath); ?>&name=<?php echo urlencode($pig['name']); ?>', 'QRPrint', 'width=800,height=600'); return false;">
@@ -435,7 +440,6 @@ if(isset($_POST['addcull'])){
         
     </div>
     </div>
-    <h2 class="card-title"><?php echo $pig['name']; ?></h2>
                 <p class="card-text"><span>Gender:</span> <?php echo $pig['gender']; ?></p>
                 <p class="card-text"><span>Breed:</span> <?php echo $pig['breed']; ?></p>
                 <p class="card-text"><span>Age:</span> <?php echo $age; ?> days</p>
@@ -464,6 +468,13 @@ if(isset($_POST['addcull'])){
             
              
     <p class="card-text"><span>Total Feeds Consumption:</span> <?php echo  round($totalFeed / $totalpigs, 2); ?> - <?php echo round($totalFeeds /  $totalpigs,2); ?> Kilograms</p>
+    <br>
+    <br>
+    <div class="button-section d-flex justify-content-center">
+    <button type="button" class="btn btn-primary btn-sm me-2" title="Update Pig" data-bs-toggle="modal" data-bs-target="#confirmModal" data-pigid="<?php echo $pig['id']; ?>">Update</button>
+    <button type="button" class="btn btn-danger btn-sm me-2<?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Culling Pig" data-bs-toggle="modal" data-bs-target="#addModal" data-pigid="<?php echo $pig['id']; ?>">Move to Cull</button>
+    <button type="button" class="btn btn-success btn-sm <?= ($pig['gender'] =="Female" && $stats =="Finisher" ) ? '':'d-none'; ?>" title="Breeding Pig" data-bs-toggle="modal" data-bs-target="#breederModal" data-pigid="<?php echo $pig['id']; ?>">Move To Breeding</button>
+    </div>
 
     <!-- CENTERED BUTTONS
       <div class="row">
@@ -575,7 +586,7 @@ if(isset($_POST['addcull'])){
                             <select name="stats" id="status" class="form-select form-select-sm" aria-label="Status">
                                 <option value="Healthy" <?php if ($pig['status'] == 'Healthy') echo 'selected'; ?>>Healthy</option>
                                 <option value="UnHealthy" <?php if ($pig['status'] == 'UnHealthy') echo 'selected'; ?>>UnHealthy</option>
-                                <option value="Posted" <?php if ($pig['status'] == 'Posted') echo 'selected'; ?>>Posted</option>
+                                <option value="Posted" <?php if ($pig['posted'] == 1) echo 'selected'; ?>>Posted</option>
                             </select>
                         </div>
                     </div>
@@ -635,25 +646,25 @@ if(isset($_POST['addcull'])){
   <input type="hidden" name="pigid" class="form-control" placeholder="Pig name" aria-label="First name" value="<?php echo $pigletsId ?>">
     <input type="text" id="fullname" name="name" class="form-control" placeholder="Sow name" aria-label="First name" autocomplete="given-name"  value="<?php echo $pig['name']; ?>">
   </div>
-  <div class="col">
+  <!-- <div class="col">
   <label for="fullname"># Farrowed</label>
     <input type="number" id="farrowed" name="farrowed" class="form-control" placeholder="How many times Farrowed" aria-label="Farrowed" autocomplete="Farrowed">
-  </div>
+  </div> -->
 </div>
 <br>
 <div class="row">
         
         <div class="col">
         <label for="fullname">Age(Month)</label>
-          <input type="number" name="age"class="form-control" placeholder="Month" aria-label="Month">
+          <input type="number" name="age"class="form-control" placeholder="Month" aria-label="Month" value="<?= $ageInMonths?>" readonly>
         </div>
         <div class="col">
         <label for="fullname">Status</label>
-  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass">
-  <option selected>Select</option>
-  <option value="Breeding">Breeding</option>
+  <select name="status" id="statusSelect" class="form-select form-select-sm" aria-label="weightclass" readonly> 
+  <option selected>Breeding</option>
+  <!-- <option value="Breeding">Breeding</option>
   <option value="Farrowing">Farrowing</option>
-  <option value="Lactating">Lactating</option>
+  <option value="Lactating">Lactating</option> -->
 </select>
         </div>
 </div>
@@ -684,8 +695,8 @@ if(isset($_POST['addcull'])){
     
       <div class="row">
       <div class="col">
-                                 <label for="map">Picture</label></label>
-  									<input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0">
+                                 <!-- <label for="map">Picture</label></label> -->
+  									<input type="text" id="map" name="pict" class="form-control form-control-sm rounded-0" value="<?php echo $pig['img']; ?>" hidden>
 								</div>
 </div>
 
@@ -725,15 +736,15 @@ if(isset($_POST['addcull'])){
         
         <div class="col">
         <label for="a">Age(Month)</label>
-          <input type="number" id="a" name="age"class="form-control" placeholder="Month" aria-label="Month"  required>
+          <input type="number" id="a" name="age"class="form-control" placeholder="Month" aria-label="Month"   value="<?= $ageInMonths?>" readonly>
         </div>
 </div>
 <br>
 
       <div class="row">
       <div class="col">
-                                 <label for="map">Picture</label>
-  									<input type="file" id="map" name="pict" class="form-control form-control-sm rounded-0" required >
+                                 <!-- <label for="map">Picture</label> -->
+  									<input type="text" id="map" name="pict" class="form-control form-control-sm rounded-0" value="<?= $pig['img'];?>" hidden >
 								</div>
 </div>
 
